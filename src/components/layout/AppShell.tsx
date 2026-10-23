@@ -2,13 +2,12 @@
 
 import { useResume } from '@/store/resume-context';
 import TiptapWrapper from '@/components/editor/TiptapWrapper';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Plus, Trash2 } from 'lucide-react';
 import HeaderActions from '@/components/shared/HeaderActions';
 import ExportPdfButton from '@/components/shared/ExportPdfButton';
+import FormSections from '@/components/form/FormSections';
 
 export default function AppShell() {
   const { state, dispatch } = useResume();
@@ -61,20 +60,7 @@ export default function AppShell() {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader className='flex flex-row items-center justify-between'>
-                <CardTitle>Bagian</CardTitle>
-                <Button size='sm' variant='outline'><Plus className='w-4 h-4 mr-1' />Tambah</Button>
-              </CardHeader>
-              <CardContent className='space-y-2'>
-                {doc.sections.sort((a,b)=>a.order-b.order).map((s) => (
-                  <div key={s.id} className='flex items-center justify-between border rounded p-2'>
-                    <span>{s.title}</span>
-                    <Button size='sm' variant='ghost'><Trash2 className='w-4 h-4' /></Button>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
+            <FormSections />
           </section>
 
           <section className='preview-panel'>

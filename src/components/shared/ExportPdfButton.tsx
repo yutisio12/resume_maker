@@ -20,13 +20,12 @@ export default function ExportPdfButton() {
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pdfWidth = 210;
-      const pdfHeight = 297;
       const imgWidth = pdfWidth;
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
       pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
       const name = state.document.personalInfo.fullName || 'Resume';
-      pdf.save(Resume-.pdf);
-    } catch (e) {
+      pdf.save('Resume-' + name.replace(/[^a-zA-Z0-9]/g, '-') + '.pdf');
+    } catch {
       alert('Gagal export PDF');
     } finally {
       setLoading(false);

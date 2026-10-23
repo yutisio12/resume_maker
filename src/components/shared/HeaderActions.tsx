@@ -3,12 +3,10 @@
 import { useResume } from '@/store/resume-context';
 import { createDefaultResume } from '@/lib/constants/defaults';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Download, Upload, Trash2 } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { saveDraft, clearDraft } from '@/lib/storage/db';
-import { v4 as uuidv4 } from 'uuid';
 
 export default function HeaderActions() {
   const { state, dispatch } = useResume();
@@ -35,7 +33,7 @@ export default function HeaderActions() {
       if (!parsed.personalInfo || !parsed.sections) throw new Error('Invalid');
       dispatch({ type: 'SET_DOCUMENT', payload: parsed });
       saveDraft(parsed);
-    } catch (err) {
+    } catch {
       alert('File JSON tidak valid');
     }
     if (fileInputRef.current) fileInputRef.current.value = '';
