@@ -7,6 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, Trash2 } from 'lucide-react';
+import HeaderActions from '@/components/shared/HeaderActions';
+import ExportPdfButton from '@/components/shared/ExportPdfButton';
 
 export default function AppShell() {
   const { state, dispatch } = useResume();
@@ -25,8 +27,9 @@ export default function AppShell() {
       <header className='app-header border-b bg-white sticky top-0 z-10' data-app-ui='true'>
         <div className='max-w-7xl mx-auto px-4 py-3 flex items-center justify-between'>
           <h1 className='text-lg font-semibold'>Resume Maker</h1>
-          <div className='flex gap-2 text-sm'>
-            <span className='text-gray-500'>Tersimpan di perangkat ini</span>
+          <div className='flex items-center gap-2'>
+            <ExportPdfButton />
+            <HeaderActions />
           </div>
         </div>
       </header>
