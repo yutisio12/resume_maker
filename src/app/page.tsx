@@ -1,7 +1,12 @@
 ﻿'use client';
 
 import AppShell from '@/components/layout/AppShell';
+import HomeTurnstileWrapper from '@/components/shared/HomeTurnstileWrapper';
 
 export default function Home() {
-  return <AppShell />;
+  return (
+    <HomeTurnstileWrapper>
+      <AppShell />
+    </HomeTurnstileWrapper>
+  );
 }

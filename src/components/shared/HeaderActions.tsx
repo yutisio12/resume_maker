@@ -5,15 +5,30 @@ import { createDefaultResume } from '@/lib/constants/defaults';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Download, Upload, Trash2 } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { saveDraft, clearDraft } from '@/lib/storage/db';
 
 export default function HeaderActions() {
   const { state, dispatch } = useResume();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [open, setOpen] = useState(false);
+  const [verified, setVerified] = useState(true);
+  const disabled = process.env.NEXT_PUBLIC_TURNSTILE_DISABLED === 'true';
+
+  useEffect(() => {
+    if (disabled) {
+      setVerified(true);
+      return;
+    }
+    const v = sessionStorage.getItem('turnstile_verified');
+    setVerified(v === 'true');
+  }, [disabled]);
 
   const exportJson = () => {
+    if (!verified) {
+      alert('Silakan verifikasi terlebih dahulu di halaman utama');
+      return;
+    }
     const data = JSON.stringify(state.document, null, 2);
     const blob = new Blob([data], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -25,6 +40,11 @@ export default function HeaderActions() {
   };
 
   const importJson = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!verified) {
+      alert('Silakan verifikasi terlebih dahulu di halaman utama');
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
     const file = e.target.files?.[0];
     if (!file) return;
     try {
@@ -51,8 +71,8 @@ export default function HeaderActions() {
   return (
     <div className='flex items-center gap-2'>
       <input ref={fileInputRef} type='file' accept='application/json' className='hidden' onChange={importJson} />
-      <Button size='sm' variant='outline' onClick={() => fileInputRef.current?.click()}><Upload className='w-4 h-4 mr-1' />Import</Button>
-      <Button size='sm' variant='outline' onClick={exportJson}><Download className='w-4 h-4 mr-1' />Export JSON</Button>
+      <Button size='sm' variant='outline' onClick={() => fileInputRef.current?.click()}><Upload className='w-4 h-4 mr-1' />{verified ? 'Import' : 'Verifikasi dulu'}</Button>
+      <Button size='sm' variant='outline' onClick={exportJson}><Download className='w-4 h-4 mr-1' />{verified ? 'Export JSON' : 'Verifikasi dulu'}</Button>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
           <Button size='sm' variant='destructive'><Trash2 className='w-4 h-4 mr-1' />Reset</Button>

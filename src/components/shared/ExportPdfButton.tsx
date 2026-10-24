@@ -5,13 +5,28 @@ import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { Button } from '@/components/ui/button';
 import { FileDown } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function ExportPdfButton() {
   const { state } = useResume();
   const [loading, setLoading] = useState(false);
+  const [verified, setVerified] = useState(true);
+  const disabled = process.env.NEXT_PUBLIC_TURNSTILE_DISABLED === 'true';
+
+  useEffect(() => {
+    if (disabled) {
+      setVerified(true);
+      return;
+    }
+    const v = sessionStorage.getItem('turnstile_verified');
+    setVerified(v === 'true');
+  }, [disabled]);
 
   const exportPdf = async () => {
+    if (!verified) {
+      alert('Silakan verifikasi terlebih dahulu di halaman utama');
+      return;
+    }
     const element = document.getElementById('resume-preview');
     if (!element) return;
     setLoading(true);
@@ -34,7 +49,7 @@ export default function ExportPdfButton() {
 
   return (
     <Button size='sm' onClick={exportPdf} disabled={loading}>
-      <FileDown className='w-4 h-4 mr-1' />{loading ? 'Membuat PDF...' : 'Export PDF'}
+      <FileDown className='w-4 h-4 mr-1' />{loading ? 'Membuat PDF...' : verified ? 'Export PDF' : 'Verifikasi dulu'}
     </Button>
   );
 }
