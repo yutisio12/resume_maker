@@ -3,11 +3,14 @@
 import { useResume } from '@/store/resume-context';
 import TiptapWrapper from '@/components/editor/TiptapWrapper';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import PreviewPhoto from '@/components/preview/PreviewPhoto';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import HeaderActions from '@/components/shared/HeaderActions';
 import ExportPdfButton from '@/components/shared/ExportPdfButton';
 import FormSections from '@/components/form/FormSections';
+import PhotoUpload from '@/components/form/PhotoUpload';
+import MobileTabs from '@/components/layout/MobileTabs';
 
 export default function AppShell() {
   const { state, dispatch } = useResume();
@@ -33,7 +36,8 @@ export default function AppShell() {
         </div>
       </header>
       <div className='max-w-7xl mx-auto p-4'>
-        <div className='grid grid-cols-1 lg:grid-cols-2 gap-4'>
+        <MobileTabs />
+        <div className='hidden lg:grid grid-cols-1 lg:grid-cols-2 gap-4'>
           <section className='form-panel space-y-4' data-app-ui='true'>
             <Card>
               <CardHeader><CardTitle>Informasi Pribadi</CardTitle></CardHeader>
@@ -53,6 +57,8 @@ export default function AppShell() {
               </CardContent>
             </Card>
 
+            <PhotoUpload />
+
             <Card>
               <CardHeader><CardTitle>Ringkasan Profesional</CardTitle></CardHeader>
               <CardContent>
@@ -66,13 +72,16 @@ export default function AppShell() {
           <section className='preview-panel'>
             <div id='resume-preview' className='bg-white shadow mx-auto' style={{ width: '210mm', minHeight: '297mm' }}>
               <div className='p-10 space-y-4'>
-                <div>
-                  <h1 className='text-3xl font-bold'>{doc.personalInfo.fullName || 'Nama Lengkap'}</h1>
-                  <p className='text-gray-700'>{doc.personalInfo.headline || 'Headline Profesional'}</p>
-                  <div className='text-sm text-gray-600 mt-1 flex flex-wrap gap-2'>
-                    {doc.personalInfo.email && <span>{doc.personalInfo.email}</span>}
-                    {doc.personalInfo.phone && <span>| {doc.personalInfo.phone}</span>}
-                    {doc.personalInfo.location && <span>| {doc.personalInfo.location}</span>}
+                <div className='flex gap-4 items-start'>
+                  <PreviewPhoto />
+                  <div className='flex-1'>
+                    <h1 className='text-3xl font-bold'>{doc.personalInfo.fullName || 'Nama Lengkap'}</h1>
+                    <p className='text-gray-700'>{doc.personalInfo.headline || 'Headline Profesional'}</p>
+                    <div className='text-sm text-gray-600 mt-1 flex flex-wrap gap-2'>
+                      {doc.personalInfo.email && <span>{doc.personalInfo.email}</span>}
+                      {doc.personalInfo.phone && <span>| {doc.personalInfo.phone}</span>}
+                      {doc.personalInfo.location && <span>| {doc.personalInfo.location}</span>}
+                    </div>
                   </div>
                 </div>
                 {doc.summary.html && (
