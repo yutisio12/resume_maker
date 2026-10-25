@@ -1,37 +1,352 @@
-﻿# Resume Maker - Next.js 14 + TypeScript
+﻿# Resume Maker
 
-Aplikasi pembuat CV/resume client-side 100%. Data disimpan lokal di IndexedDB, tanpa backend, tanpa kirim data ke server.
+Aplikasi pembuat CV/resume profesional yang ramah ATS, berjalan **100% di browser**. Data CV disimpan lokal di IndexedDB; tidak ada backend yang menerima isi CV, foto, atau file ekspor.
 
-## Fitur
-- Form multi-section (Personal, Summary, Experience, Education, Skills, Projects, Certifications, Languages)
-- Rich text editor (Tiptap) untuk deskripsi/summary
-- Live preview A4
-- 2 template: ATS Classic (default, tanpa foto) & Minimal
-- Upload foto (resize/compress), simpan lokal
-- Autosave ke IndexedDB
-- Export/Import JSON (dengan validasi)
-- Export PDF via html2canvas + jsPDF
-- Responsive (desktop 2-panel, mobile tab)
+Dibuat oleh [github.com/yutisio12](https://github.com/yutisio12).
 
-## Tech Stack
-- Next.js 14 (App Router) + TypeScript
-- Tailwind CSS + shadcn/ui
-- Tiptap
-- IndexedDB (idb)
-- html2canvas + jsPDF
-- DOMPurify + Zod
+> **Dokumen teknis lengkap:** lihat [PLAN.md](./PLAN.md). Dokumen ini menjelaskan arsitektur, roadmap P0/P1, acceptance criteria, dan batasan implementasi secara rinci.
 
-## Development
-\\\ash
-npm install
-npm run dev
-\\\
+---
 
-## Build (Static Export)
-\\\ash
-npm run build
-\\\
-Hasil build ada di folder \out/\. Bisa langsung deploy ke static hosting (GitHub Pages, Cloudflare Pages, Netlify).
+## Status Proyek
+
+Aplikasi sudah dapat di-build menjadi static assets dan sebagian fitur inti sudah berjalan. Beberapa fitur keamanan dan kelengkapan masih berada dalam roadmap P0/P1.
+
+| Area | Status |
+|---|---|
+| Next.js 14 + static export | Selesai |
+| Form CV & live preview | Sebagian |
+| IndexedDB autosave/restore | Sebagian |
+| Upload foto | Sebagian |
+| Import/Export JSON | Sebagian |
+| Export PDF | Belum sesuai rencana |
+| Dua template | Belum |
+| Sanitasi HTML menyeluruh | Belum |
+| Watermark preview + PDF | Belum |
+| Turnstile | Selesai |
+
+Rencana lengkap ada di [PLAN.md](./PLAN.md).
+
+---
+
+## Fitur yang Direncanakan
+
+### Data CV
+- Informasi pribadi: nama, headline, lokasi, telepon, email, LinkedIn, GitHub, website.
+- Ringkasan profesional rich-text.
+- Pengalaman kerja, pendidikan, keahlian, proyek, sertifikasi, bahasa.
+- Tambah, ubah, hapus, dan tampilkan/sembunyikan section/item.
+- **Reorder section/item tidak tersedia** dan tidak termasuk scope versi ini.
+
+### Editor
+- Tiptap dengan bold, italic, underline, strike, bullet list, numbered list, link, undo/redo, dan clear formatting.
+- Mode single-line untuk field pendek dan multiline untuk deskripsi.
+- Toolbar aksesibel dengan label dan tooltip.
+
+### Template
+- **ATS Classic** (default): satu kolom, tanpa foto default, heading standar.
+- **Minimal**: satu kolom, lebih lapang, tetap mudah diparsing.
+- Preview dan hasil cetak memiliki alur baca yang sama.
+
+### Foto
+- Upload JPG/PNG/WebP maksimal 2 MB.
+- Resize/compress di browser, simpan blob di IndexedDB.
+- Crop, tampilkan/sembunyikan, ganti, dan hapus.
+- Foto tidak pernah dikirim ke server.
+
+### Import/Export
+- Export JSON untuk backup atau pindah perangkat.
+- Import JSON dengan validasi schema, batas ukuran, sanitasi HTML, preview dokumen, dan konfirmasi sebelum draft diganti.
+- Export PDF melalui browser print dialog (`window.print()`), bukan layanan konversi online.
+
+### Keamanan
+- Sanitasi HTML sebelum preview, penyimpanan, dan export.
+- Validasi URL: hanya `http`, `https`, `mailto`, dan `tel`.
+- Cloudflare Turnstile pada homepage serta Import/Export.
+- Tidak ada analytics, tracking, atau pengiriman data CV ke pihak ketiga.
+
+---
+
+## Watermark
+
+> Watermark adalah bagian dari roadmap **P1**. Bagian ini menjelaskan perilaku final yang akan diterapkan.
+
+### Preview
+Preview CV menampilkan watermark samar dan berulang:
+
+```
+Create by github.com/yutisio12
+```
+
+Tujuannya agar screenshot preview tidak bersih. Watermark tidak memiliki tombol hapus di aplikasi.
+
+### PDF
+Saat mencetak/menyimpan PDF, preview watermark disembunyikan dan diganti watermark teks putih tersembunyi di layer teks PDF:
+
+```
+Create by github.com/yutisio12 | doc:<id> | <timestamp>
+```
+
+Watermark ini tidak terlihat secara visual, tetapi dapat diidentifikasi melalui ekstraksi teks PDF.
+
+### Batasan penting
+
+- Ini **bukan DRM** dan **bukan tamper-proof**. Pengguna teknis tetap dapat mengedit atau menghapus watermark dengan tools PDF.
+- Watermark preview hanya menghalangi screenshot secara visual; pengguna tetap bisa melakukan crop atau menyembunyikannya lewat inspect element.
+- Karena aplikasi tidak memakai akun, watermark hanya mengidentifikasi **dokumen/export**, bukan identitas pengguna.
+- Watermark tidak memuat nama, email, telepon, atau data pribadi lain.
+- Watermark yang benar-benar tidak bisa dihapus memerlukan PDF signing/DRM di server, yang bertentangan dengan prinsip 100% client-side.
+
+---
+
+## Import JSON dan Sample
+
+> Alur import yang dijelaskan di sini adalah target **P0**. Saat ini import masih berupa validasi dasar tanpa preview dan sample.
+
+Import tidak langsung mengganti draft. Alurnya:
+
+1. Klik **Import**.
+2. Selesaikan Turnstile jika diminta.
+3. Modal import terbuka.
+4. Unduh **contoh JSON** jika perlu.
+5. Pilih file JSON.
+6. File divalidasi dan disanitasi.
+7. Preview dokumen yang akan diimport ditampilkan.
+8. Klik **Ganti draft** untuk menerapkan, atau **Batal**.
+
+Sample akan tersedia di (P0):
+
+```
+/sample-resume.json
+```
+
+Sample berisi data dummy lengkap untuk semua section. Sample tidak otomatis dimasukkan ke draft; pengguna harus mengunduh dan mengimportnya secara sadar.
+
+### Format JSON
+
+File harus mengikuti struktur `ResumeDocument`:
+
+```json
+{
+  "schemaVersion": 1,
+  "id": "uuid",
+  "metadata": {
+    "createdAt": "2026-10-25T00:00:00.000Z",
+    "updatedAt": "2026-10-25T00:00:00.000Z"
+  },
+  "personalInfo": {
+    "fullName": "Nama Contoh",
+    "headline": "Frontend Developer",
+    "location": "Jakarta",
+    "phone": "0812xxxx",
+    "email": "nama@example.com",
+    "linkedin": "https://linkedin.com/in/contoh",
+    "github": "https://github.com/contoh",
+    "website": "https://example.com",
+    "photoId": null,
+    "showPhoto": false
+  },
+  "summary": {
+    "html": "<p>Ringkasan profesional...</p>",
+    "text": "Ringkasan profesional..."
+  },
+  "sections": [
+    {
+      "id": "uuid",
+      "type": "experience",
+      "title": "Pengalaman Kerja",
+      "visible": true,
+      "order": 0,
+      "items": []
+    }
+  ],
+  "settings": {
+    "template": "ats-classic",
+    "showPhoto": false,
+    "fontFamily": "Arial"
+  }
+}
+```
+
+Catatan:
+
+- Foto **tidak ikut** dalam JSON karena disimpan sebagai blob di IndexedDB.
+- Saat import, `photoId` dihapus dan foto tidak ditampilkan di perangkat tujuan.
+- Template/font yang tidak dikenal akan fallback ke default.
+- HTML dari import disanitasi sebelum ditampilkan atau disimpan.
+
+---
 
 ## Privasi
-Semua proses di browser. Tidak ada API, tidak ada analytics, tidak ada pengiriman data.
+
+- Semua pemrosesan CV terjadi di browser.
+- Draft dan foto disimpan di IndexedDB perangkat pengguna.
+- Tidak ada akun, login, cookie pelacakan, analytics, atau cloud sync.
+- Data dapat hilang jika pengguna menghapus data situs/browser.
+- Data tidak dienkripsi oleh aplikasi. Jangan mengklaim sebaliknya.
+- Satu-satunya request eksternal adalah Cloudflare Turnstile. Yang dikirim hanya token verifikasi, bukan isi CV.
+- Script Turnstile dimuat dari Cloudflare; ini perlu diketahui jika ingin deployment tanpa request pihak ketiga.
+
+---
+
+## Menjalankan Secara Lokal
+
+Kebutuhan:
+
+- Node.js 20+
+- npm
+
+```bash
+npm install
+npm run dev
+```
+
+Buka `http://localhost:3000`.
+
+### Environment
+
+Buat `.env.local`:
+
+```env
+NEXT_PUBLIC_TURNSTILE_SITE_KEY=site-key-anda
+NEXT_PUBLIC_TURNSTILE_DISABLED=true
+```
+
+- `NEXT_PUBLIC_TURNSTILE_SITE_KEY`: site key Turnstile, aman di client.
+- `NEXT_PUBLIC_TURNSTILE_DISABLED=true`: bypass Turnstile untuk development.
+- `TURNSTILE_SECRET_KEY`: **hanya** untuk environment Cloudflare Pages, jangan pernah dimasukkan ke client.
+
+Contoh lengkap ada di `.env.example`.
+
+---
+
+## Build
+
+```bash
+npm run build
+```
+
+Hasil static export ada di folder `out/`.
+
+Perintah lain:
+
+```bash
+npm run lint
+npm run test:run
+```
+
+Status verifikasi saat ini:
+
+- `npm run build` sudah lulus.
+- `npm run test:run` masih diperbaiki di P0 (masalah worker Vitest/undici).
+- `npm run lint` belum dijadikan bukti sampai P0 selesai.
+
+---
+
+## Deploy ke Cloudflare Pages
+
+Pengaturan umum:
+
+- **Build command:** `npm run build`
+- **Output directory:** `out`
+- **Framework preset:** Next.js (static export)
+
+Environment variables di Cloudflare Pages:
+
+```env
+NEXT_PUBLIC_TURNSTILE_SITE_KEY=site-key-anda
+TURNSTILE_SECRET_KEY=secret-key-anda
+```
+
+Folder `functions/` berisi Cloudflare Pages Function `verify-turnstile.ts` untuk memverifikasi token. File `public/_headers` menambahkan header keamanan.
+
+Alur verifikasi:
+
+1. Widget Turnstile menghasilkan token di browser.
+2. Token dikirim ke `/verify-turnstile`.
+3. Function memverifikasi token ke Cloudflare memakai `TURNSTILE_SECRET_KEY`.
+4. Jika valid, aplikasi menyimpan status verifikasi di `sessionStorage`.
+
+Tidak ada data CV yang dikirim ke endpoint ini.
+
+---
+
+## Struktur Proyek
+
+```
+src/
+  app/                 Halaman utama, layout, global CSS
+  components/
+    editor/            Tiptap editor dan wrapper
+    form/              Form section dan upload foto
+    layout/            AppShell desktop dan MobileTabs
+    preview/           Preview CV dan foto
+    shared/            Header actions, export, Turnstile
+    ui/                Komponen shadcn/ui
+  lib/
+    constants/         Default resume
+    models/            Tipe data
+    storage/           IndexedDB
+    utils/             Sanitasi dan helper
+  store/               Resume context + autosave
+  styles/              Tema Monokai dan print stylesheet
+public/
+  _headers
+  sample-resume.json   (ditambahkan pada P0)
+functions/
+  verify-turnstile.ts
+```
+
+---
+
+## Roadmap
+
+### P0 — Keamanan dan kejujuran
+
+- Perbaiki test runner.
+- Sanitasi HTML dan URL di semua alur.
+- Validasi import dengan Zod + batas ukuran + schema version.
+- Modal import dengan preview dan sample JSON.
+- Status penyimpanan dan error yang jujur.
+- `beforeunload` untuk perubahan belum tersimpan.
+- Konfirmasi hapus item; hapus ikon reorder palsu.
+
+### P1 — Watermark dan kelengkapan
+
+- Watermark preview terlihat + watermark PDF tersembunyi.
+- Export PDF via `window.print()`.
+- Field pendidikan/proyek/sertifikasi yang lengkap.
+- Kontak LinkedIn/GitHub/website di preview.
+- Dua template: ATS Classic dan Minimal.
+- Toolbar Tiptap lengkap dan aksesibel.
+- Crop foto, ganti/hapus blob lama, reset bersih.
+- Dokumentasi final.
+
+Detail lengkap ada di [PLAN.md](./PLAN.md).
+
+---
+
+## Batasan yang Diketahui
+
+- **Reorder section/item tidak tersedia.**
+- Export DOCX tidak tersedia.
+- Tidak ada akun, login, atau cloud sync.
+- Watermark bukan DRM dan dapat dihapus dengan tools PDF.
+- Watermark tidak mengidentifikasi pengguna, hanya dokumen/export.
+- Foto tidak ikut dalam JSON.
+- Ketersediaan font CV bergantung pada font di perangkat pengguna.
+- Hasil PDF dapat berbeda sedikit tergantung browser, printer, dan pengaturan margin.
+- Turnstile memuat script eksternal dari Cloudflare.
+- Test runner masih diperbaiki.
+
+---
+
+## Lisensi dan Kredit
+
+Dibuat oleh [github.com/yutisio12](https://github.com/yutisio12).
+
+Watermark pada preview dan PDF menggunakan teks:
+
+```
+Create by github.com/yutisio12
+```
