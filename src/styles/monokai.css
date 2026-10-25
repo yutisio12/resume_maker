@@ -1,79 +1,277 @@
-﻿:root {
-  --background: 40 11% 12%;
+﻿/* Monokai Sublime theme */
+
+:root {
+  --background: 70 8% 15%;
   --foreground: 60 30% 96%;
-  --card: 40 11% 14%;
+
+  --card: 65 8% 18%;
   --card-foreground: 60 30% 96%;
-  --popover: 40 11% 14%;
+  --popover: 65 8% 18%;
   --popover-foreground: 60 30% 96%;
+
   --primary: 80 76% 53%;
-  --primary-foreground: 40 11% 12%;
-  --secondary: 55 8% 26%;
+  --primary-foreground: 70 10% 10%;
+
+  --secondary: 55 9% 25%;
   --secondary-foreground: 60 30% 96%;
-  --muted: 55 8% 26%;
-  --muted-foreground: 50 10% 64%;
-  --accent: 80 76% 53%;
-  --accent-foreground: 40 11% 12%;
+
+  --muted: 55 9% 23%;
+  --muted-foreground: 50 11% 60%;
+
+  --accent: 55 9% 28%;
+  --accent-foreground: 60 30% 96%;
+
   --destructive: 338 95% 56%;
   --destructive-foreground: 60 30% 96%;
-  --border: 55 8% 26%;
-  --input: 55 8% 26%;
+
+  --border: 55 8% 30%;
+  --input: 55 8% 30%;
   --ring: 80 76% 53%;
+
   --radius: 0.5rem;
+
+  --monokai-bg: #272822;
+  --monokai-bg-alt: #2d2e27;
+  --monokai-surface: #3e3d32;
+  --monokai-surface-alt: #49483e;
+  --monokai-border: #75715e;
+  --monokai-text: #f8f8f2;
+  --monokai-comment: #75715e;
+  --monokai-yellow: #e6db74;
+  --monokai-orange: #fd971f;
+  --monokai-pink: #f92672;
+  --monokai-green: #a6e22e;
+  --monokai-cyan: #66d9ef;
+  --monokai-purple: #ae81ff;
+
+  color-scheme: dark;
 }
 
 .dark {
-  --background: 40 11% 12%;
+  --background: 70 8% 15%;
   --foreground: 60 30% 96%;
-  --card: 40 11% 14%;
+
+  --card: 65 8% 18%;
   --card-foreground: 60 30% 96%;
-  --popover: 40 11% 14%;
+  --popover: 65 8% 18%;
   --popover-foreground: 60 30% 96%;
+
   --primary: 80 76% 53%;
-  --primary-foreground: 40 11% 12%;
-  --secondary: 55 8% 26%;
+  --primary-foreground: 70 10% 10%;
+
+  --secondary: 55 9% 25%;
   --secondary-foreground: 60 30% 96%;
-  --muted: 55 8% 26%;
-  --muted-foreground: 50 10% 64%;
-  --accent: 80 76% 53%;
-  --accent-foreground: 40 11% 12%;
+
+  --muted: 55 9% 23%;
+  --muted-foreground: 50 11% 60%;
+
+  --accent: 55 9% 28%;
+  --accent-foreground: 60 30% 96%;
+
   --destructive: 338 95% 56%;
   --destructive-foreground: 60 30% 96%;
-  --border: 55 8% 26%;
-  --input: 55 8% 26%;
+
+  --border: 55 8% 30%;
+  --input: 55 8% 30%;
   --ring: 80 76% 53%;
 }
 
 body {
   background: hsl(var(--background));
   color: hsl(var(--foreground));
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background: var(--monokai-surface-alt);
+  color: var(--monokai-text);
+}
+
+* {
+  scrollbar-color: var(--monokai-surface-alt) var(--monokai-bg);
+  scrollbar-width: thin;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--monokai-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--monokai-surface-alt);
+  border: 2px solid var(--monokai-bg);
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--monokai-border);
+}
+
+/* Native form controls */
+select {
+  background-color: hsl(var(--card));
+  color: hsl(var(--foreground));
+  border-color: hsl(var(--input));
+}
+
+select option {
+  background-color: var(--monokai-bg);
+  color: var(--monokai-text);
+}
+
+select option:checked,
+select option:hover {
+  background-color: var(--monokai-surface-alt);
+  color: var(--monokai-yellow);
+}
+
+select:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 1px;
+}
+
+input[type='checkbox'],
+input[type='radio'] {
+  accent-color: var(--monokai-green);
+}
+
+/* App shell accents */
+.app-header h1 {
+  color: var(--monokai-yellow);
+  letter-spacing: 0.01em;
+}
+
+.app-header h1::before {
+  content: '# ';
+  color: var(--monokai-pink);
+}
+
+/* Tiptap / rich text editor */
+.monokai-editor {
+  background: var(--monokai-bg-alt);
+  border-color: var(--monokai-border);
+}
+
+.monokai-editor .toolbar {
+  background: var(--monokai-surface);
+  border-bottom: 1px solid var(--monokai-border);
+}
+
+.monokai-editor .toolbar button {
+  color: var(--monokai-text);
+  border-radius: 4px;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+.monokai-editor .toolbar button:hover {
+  background: var(--monokai-surface-alt);
+  color: var(--monokai-yellow);
+}
+
+.monokai-editor .toolbar button.is-active,
+.monokai-editor .toolbar button[data-active='true'] {
+  background: var(--monokai-green);
+  color: var(--monokai-bg);
 }
 
 .monokai-editor .ProseMirror {
-  background: #272822;
-  color: #f8f8f2;
+  background: transparent;
+  color: var(--monokai-text);
   min-height: 120px;
-  padding: 8px;
+  padding: 10px 12px;
   border-radius: 6px;
+  outline: none;
+  line-height: 1.6;
+}
+
+.monokai-editor .ProseMirror:focus {
+  outline: none;
 }
 
 .monokai-editor .ProseMirror p {
   margin: 0.25em 0;
 }
 
-.monokai-editor .toolbar {
-  background: #3e3d32;
-  border: 1px solid #75715e;
+.monokai-editor .ProseMirror h1,
+.monokai-editor .ProseMirror h2,
+.monokai-editor .ProseMirror h3 {
+  color: var(--monokai-green);
+  font-weight: 600;
+  margin: 0.6em 0 0.3em;
 }
 
-.monokai-editor button {
-  color: #f8f8f2;
+.monokai-editor .ProseMirror strong {
+  color: var(--monokai-yellow);
 }
 
-.monokai-editor button:hover {
-  background: #49483e;
+.monokai-editor .ProseMirror em {
+  color: var(--monokai-orange);
 }
 
-.monokai-editor .is-active {
-  background: #a6e22e;
-  color: #272822;
+.monokai-editor .ProseMirror a {
+  color: var(--monokai-cyan);
+  text-decoration: underline;
+}
+
+.monokai-editor .ProseMirror code {
+  background: var(--monokai-surface);
+  color: var(--monokai-yellow);
+  border-radius: 4px;
+  padding: 0.1em 0.35em;
+  font-family: 'Consolas', 'Menlo', 'Monaco', monospace;
+  font-size: 0.9em;
+}
+
+.monokai-editor .ProseMirror pre {
+  background: var(--monokai-bg);
+  color: var(--monokai-text);
+  border: 1px solid var(--monokai-border);
+  border-radius: 6px;
+  padding: 10px 12px;
+  overflow-x: auto;
+}
+
+.monokai-editor .ProseMirror pre code {
+  background: transparent;
+  color: inherit;
+  padding: 0;
+}
+
+.monokai-editor .ProseMirror blockquote {
+  border-left: 3px solid var(--monokai-pink);
+  color: var(--monokai-comment);
+  padding-left: 12px;
+  margin: 0.5em 0;
+}
+
+.monokai-editor .ProseMirror ul,
+.monokai-editor .ProseMirror ol {
+  padding-left: 1.4em;
+  margin: 0.4em 0;
+}
+
+.monokai-editor .ProseMirror ul li::marker {
+  color: var(--monokai-pink);
+}
+
+.monokai-editor .ProseMirror ol li::marker {
+  color: var(--monokai-purple);
+}
+
+.monokai-editor .ProseMirror hr {
+  border-color: var(--monokai-border);
+  margin: 0.8em 0;
+}
+
+.monokai-editor .ProseMirror p.is-editor-empty:first-child::before {
+  color: var(--monokai-comment);
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
 }
