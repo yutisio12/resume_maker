@@ -35,8 +35,8 @@ export default function TiptapEditor({ content, onChange }: TiptapEditorProps) {
   if (!editor) return null;
 
   return (
-    <div className='border rounded-md'>
-      <div className='flex flex-wrap gap-1 p-1 border-b bg-gray-50'>
+    <div className='border border-[#75715e] rounded-md monokai-editor'>
+      <div className='flex flex-wrap gap-1 p-1 border-b border-[#75715e] toolbar'>
         <button type='button' onClick={() => editor.chain().focus().toggleBold().run()} className={editor.isActive('bold') ? 'px-2 py-1 text-xs rounded bg-gray-200' : 'px-2 py-1 text-xs rounded'}>B</button>
         <button type='button' onClick={() => editor.chain().focus().toggleItalic().run()} className={editor.isActive('italic') ? 'px-2 py-1 text-xs rounded bg-gray-200' : 'px-2 py-1 text-xs rounded'}>I</button>
         <button type='button' onClick={() => editor.chain().focus().toggleUnderline().run()} className={editor.isActive('underline') ? 'px-2 py-1 text-xs rounded bg-gray-200' : 'px-2 py-1 text-xs rounded'}>U</button>

@@ -9,12 +9,12 @@ describe('sanitizeHtml', () => {
   })
 
   it('blocks onclick attribute', () => {
-    const result = sanitizeHtml(\"<p onclick='alert(1)'>x</p>\")
+    const result = sanitizeHtml("<p onclick='alert(1)'>x</p>")
     expect(result).not.toContain('onclick')
   })
 
   it('blocks javascript: links', () => {
-    const result = sanitizeHtml(\"<a href='javascript:alert(1)'>klik</a>\")
+    const result = sanitizeHtml("<a href='javascript:alert(1)'>klik</a>")
     expect(result).not.toContain('javascript:')
   })
 

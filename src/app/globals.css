@@ -1,23 +1,17 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@import '../styles/monokai.css';
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --background: 40 11% 12%;
+  --foreground: 60 30% 96%;
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  color: hsl(var(--foreground));
+  background: hsl(var(--background));
+  font-family: 'Consolas', 'Menlo', 'Monaco', monospace;
 }
 
 @layer utilities {
