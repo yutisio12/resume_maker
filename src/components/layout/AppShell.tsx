@@ -25,8 +25,8 @@ export default function AppShell() {
   };
 
   return (
-    <main className='min-h-screen bg-gray-50'>
-      <header className='app-header border-b bg-white sticky top-0 z-10' data-app-ui='true'>
+    <main className='min-h-screen bg-[#272822]'>
+      <header className='app-header border-b border-[#75715e] bg-[#3e3d32] sticky top-0 z-10 text-[#f8f8f2]' data-app-ui='true'>
         <div className='max-w-7xl mx-auto px-4 py-3 flex items-center justify-between'>
           <h1 className='text-lg font-semibold'>Resume Maker</h1>
           <div className='flex items-center gap-2'>
