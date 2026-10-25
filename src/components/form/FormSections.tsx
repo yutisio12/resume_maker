@@ -227,11 +227,11 @@ export default function FormSections() {
             <CardTitle>{s.title}</CardTitle>
           </CardHeader>
           <CardContent className='space-y-2'>
-            <TiptapWrapper content={s.items?.[0]?.description?.html || ''} onChange={(html, text) => {
+            <TiptapWrapper content={(s.items?.[0] as any)?.description?.html || ''} onChange={(html, text) => {
               if (!s.items || s.items.length === 0) {
                 addItem(s.id, { description: { html, text } });
               } else {
-                updateItem(s.id, s.items[0].id, 'description', { html, text });
+                updateItem(s.id, (s.items[0] as any).id, 'description', { html, text });
               }
             }} />
             <p className='text-xs text-gray-500'>Isi keahlian kamu (bisa pakai bullet list)</p>

@@ -107,9 +107,45 @@ export default function AppShell() {
                         )}
                       </div>
                     ))}
-                    {s.type === 'education' && <p className='text-sm text-gray-600 italic'>Item pendidikan belum ditampilkan</p>}
-                    {s.type === 'skills' && <p className='text-sm text-gray-600 italic'>Isi di form</p>}
-                    {(s.items || []).length === 0 && s.type !== 'experience' && <p className='text-sm text-gray-500 italic'>Belum ada item</p>}
+                    {s.type === 'education' && (s.items || []).map((item: { id: string; school?: string; degree?: string; startDate?: string; endDate?: string; current?: boolean; description?: { html?: string } }) => (
+                      <div key={item.id} className='mb-3'>
+                        <div className='flex justify-between'>
+                          <div>
+                            <p className='font-semibold text-black'>{item.school || ''}</p>
+                            <p className='text-sm text-black'>{item.degree || ''}</p>
+                          </div>
+                          <p className='text-sm text-black'>{item.startDate || ''} {item.endDate || item.current ? (item.current ? ' - Sekarang' : ` - ${item.endDate}`) : ''}</p>
+                        </div>
+                        {item.description?.html && (
+                          <div className='prose prose-sm max-w-none text-black' dangerouslySetInnerHTML={{ __html: item.description.html }} />
+                        )}
+                      </div>
+                    ))}
+                    {s.type === 'projects' && (s.items || []).map((item: { id: string; name?: string; url?: string; description?: { html?: string } }) => (
+                      <div key={item.id} className='mb-3'>
+                        <p className='font-semibold text-black'>{item.name || ''} {item.url ? <a href={item.url} className='text-black underline'>{item.url}</a> : ''}</p>
+                        {item.description?.html && (
+                          <div className='prose prose-sm max-w-none text-black' dangerouslySetInnerHTML={{ __html: item.description.html }} />
+                        )}
+                      </div>
+                    ))}
+                    {s.type === 'certifications' && (s.items || []).map((item: { id: string; name?: string; issuer?: string; date?: string }) => (
+                      <div key={item.id} className='mb-2'>
+                        <p className='font-semibold text-black'>{item.name || ''}</p>
+                        <p className='text-sm text-black'>{item.issuer || ''} {item.date ? `| ${item.date}` : ''}</p>
+                      </div>
+                    ))}
+                    {s.type === 'languages' && (
+                      <ul className='list-disc list-inside text-black'>
+                        {(s.items || []).map((item: { id: string; name?: string; level?: string }) => (
+                          <li key={item.id}><span className='text-black'>{item.name || ''}</span>{item.level ? ` - ${item.level}` : ''}</li>
+                        ))}
+                      </ul>
+                    )}
+                    {s.type === 'skills' && (s.items?.[0] as { description?: { html?: string } })?.description?.html && (
+                      <div className='prose prose-sm max-w-none text-black' dangerouslySetInnerHTML={{ __html: (s.items?.[0] as { description?: { html?: string } }).description.html || '' }} />
+                    )}
+                    {(s.items || []).length === 0 && !['skills', 'languages'].includes(s.type) && <p className='text-sm text-gray-500 italic'>Belum ada item</p>}
                   </div>
                 ))}
               </div>
