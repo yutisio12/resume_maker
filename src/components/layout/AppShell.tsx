@@ -74,10 +74,10 @@ export default function AppShell() {
               <div className='p-10 space-y-4'>
                 <div className='flex gap-4 items-start'>
                   <PreviewPhoto />
-                  <div className='flex-1'>
-                    <h1 className='text-3xl font-bold'>{doc.personalInfo.fullName || 'Nama Lengkap'}</h1>
-                    <p className='text-gray-700'>{doc.personalInfo.headline || 'Headline Profesional'}</p>
-                    <div className='text-sm text-gray-600 mt-1 flex flex-wrap gap-2'>
+                  <div className='flex-1 text-black'>
+                    <h1 className='text-3xl font-bold text-black'>{doc.personalInfo.fullName || 'Nama Lengkap'}</h1>
+                    <p className='text-black'>{doc.personalInfo.headline || 'Headline Profesional'}</p>
+                    <div className='text-sm text-black mt-1 flex flex-wrap gap-2'>
                       {doc.personalInfo.email && <span>{doc.personalInfo.email}</span>}
                       {doc.personalInfo.phone && <span>| {doc.personalInfo.phone}</span>}
                       {doc.personalInfo.location && <span>| {doc.personalInfo.location}</span>}
@@ -85,15 +85,31 @@ export default function AppShell() {
                   </div>
                 </div>
                 {doc.summary.html && (
-                  <div>
-                    <h2 className='text-lg font-semibold border-b mb-2'>Profil</h2>
-                    <div className='prose prose-sm max-w-none' dangerouslySetInnerHTML={{ __html: doc.summary.html }} />
+                  <div className='text-black'>
+                    <h2 className='text-lg font-semibold border-b mb-2 text-black'>Profil</h2>
+                    <div className='prose prose-sm max-w-none text-black' dangerouslySetInnerHTML={{ __html: doc.summary.html }} />
                   </div>
                 )}
                 {doc.sections.filter(s=>s.visible).sort((a,b)=>a.order-b.order).map((s) => (
-                  <div key={s.id}>
-                    <h2 className='text-lg font-semibold border-b mb-2'>{s.title}</h2>
-                    <p className='text-sm text-gray-500 italic'>Belum ada item</p>
+                  <div key={s.id} className='text-black'>
+                    <h2 className='text-lg font-semibold border-b mb-2 text-black'>{s.title}</h2>
+                    {s.type === 'experience' && (s.items || []).map((item: { id: string; position?: string; company?: string; location?: string; startDate?: string; endDate?: string; current?: boolean; description?: { html?: string } }) => (
+                      <div key={item.id} className='mb-3'>
+                        <div className='flex justify-between'>
+                          <div>
+                            <p className='font-semibold text-black'>{item.position || ''}</p>
+                            <p className='text-sm text-black'>{item.company || ''} {item.location ? `| ${item.location}` : ''}</p>
+                          </div>
+                          <p className='text-sm text-black'>{item.startDate || ''} {item.endDate || item.current ? (item.current ? ' - Sekarang' : ` - ${item.endDate}`) : ''}</p>
+                        </div>
+                        {item.description?.html && (
+                          <div className='prose prose-sm max-w-none text-black' dangerouslySetInnerHTML={{ __html: item.description.html }} />
+                        )}
+                      </div>
+                    ))}
+                    {s.type === 'education' && <p className='text-sm text-gray-600 italic'>Item pendidikan belum ditampilkan</p>}
+                    {s.type === 'skills' && <p className='text-sm text-gray-600 italic'>Isi di form</p>}
+                    {(s.items || []).length === 0 && s.type !== 'experience' && <p className='text-sm text-gray-500 italic'>Belum ada item</p>}
                   </div>
                 ))}
               </div>
