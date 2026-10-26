@@ -83,6 +83,7 @@ export const createDefaultResume = (): ResumeDocument => {
     settings: {
       template: 'ats-classic',
       showPhoto: false,
+      fontFamily: 'Arial',
     },
   };
 };

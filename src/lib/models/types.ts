@@ -72,18 +72,37 @@ export type SectionType =
   | 'skills'
   | 'custom';
 
+export interface SectionItem {
+  id: string;
+  position?: string;
+  company?: string;
+  location?: string;
+  startDate?: string;
+  endDate?: string;
+  current?: boolean;
+  description?: RichTextContent;
+  school?: string;
+  degree?: string;
+  name?: string;
+  url?: string;
+  issuer?: string;
+  date?: string;
+  level?: string;
+}
+
 export interface ResumeSection {
   id: string;
   type: SectionType;
   title: string;
   visible: boolean;
   order: number;
-  items: unknown[];
+  items: SectionItem[];
 }
 
 export interface ResumeSettings {
   template: TemplateType;
   showPhoto: boolean;
+  fontFamily?: string;
 }
 
 export interface ResumeDocument {
