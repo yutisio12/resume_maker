@@ -1,4 +1,4 @@
-﻿# Resume Maker
+# Resume Maker
 
 Aplikasi pembuat CV/resume profesional yang ramah ATS, berjalan **100% di browser**. Data CV disimpan lokal di IndexedDB; tidak ada backend yang menerima isi CV, foto, atau file ekspor.
 
@@ -10,26 +10,26 @@ Dibuat oleh [github.com/yutisio12](https://github.com/yutisio12).
 
 ## Status Proyek
 
-Aplikasi sudah dapat di-build menjadi static assets dan sebagian fitur inti sudah berjalan. Beberapa fitur keamanan dan kelengkapan masih berada dalam roadmap P0/P1.
+Aplikasi sudah dapat di-build menjadi static assets. Roadmap P0 dan P1 selesai; print desktop/mobile serta alur import, foto, reset, error penyimpanan, dan Turnstile sudah diuji dengan Chrome headless/Playwright.
 
 | Area | Status |
 |---|---|
 | Next.js 14 + static export | Selesai |
-| Form CV & live preview | Sebagian |
-| IndexedDB autosave/restore | Sebagian |
-| Upload foto | Sebagian |
-| Import/Export JSON | Sebagian |
-| Export PDF | Belum sesuai rencana |
-| Dua template | Belum |
-| Sanitasi HTML menyeluruh | Belum |
-| Watermark preview + PDF | Belum |
+| Form CV & live preview | Selesai |
+| IndexedDB autosave/restore | Selesai |
+| Upload foto | Selesai |
+| Import/Export JSON | Selesai |
+| Export PDF | Selesai (`window.print()`) |
+| Dua template | Selesai |
+| Sanitasi HTML menyeluruh | Selesai |
+| Watermark preview + PDF | Selesai |
 | Turnstile | Selesai |
 
 Rencana lengkap ada di [PLAN.md](./PLAN.md).
 
 ---
 
-## Fitur yang Direncanakan
+## Fitur
 
 ### Data CV
 - Informasi pribadi: nama, headline, lokasi, telepon, email, LinkedIn, GitHub, website.
@@ -39,9 +39,10 @@ Rencana lengkap ada di [PLAN.md](./PLAN.md).
 - **Reorder section/item tidak tersedia** dan tidak termasuk scope versi ini.
 
 ### Editor
-- Tiptap dengan bold, italic, underline, strike, bullet list, numbered list, link, undo/redo, dan clear formatting.
-- Mode single-line untuk field pendek dan multiline untuk deskripsi.
-- Toolbar aksesibel dengan label dan tooltip.
+- Tiptap dengan bold, italic, underline, strike, bullet list, numbered list, link, undo/redo.
+- Dialog link dengan validasi URL; tautan tidak aman ditolak.
+- Mode single-line tersedia untuk field pendek.
+- Toolbar aksesibel dengan label, tooltip, dan focus state.
 
 ### Template
 - **ATS Classic** (default): satu kolom, tanpa foto default, heading standar.
@@ -60,16 +61,14 @@ Rencana lengkap ada di [PLAN.md](./PLAN.md).
 - Export PDF melalui browser print dialog (`window.print()`), bukan layanan konversi online.
 
 ### Keamanan
-- Sanitasi HTML sebelum preview, penyimpanan, dan export.
+- Sanitasi HTML sebelum preview dan export, serta saat import JSON.
 - Validasi URL: hanya `http`, `https`, `mailto`, dan `tel`.
-- Cloudflare Turnstile pada homepage serta Import/Export.
+- Cloudflare Turnstile pada homepage serta Import/Export. Pada aplikasi static ini, Turnstile berfungsi sebagai gate UX/spam, bukan access control; pengguna teknis tetap dapat memodifikasi sisi client.
 - Tidak ada analytics, tracking, atau pengiriman data CV ke pihak ketiga.
 
 ---
 
 ## Watermark
-
-> Watermark adalah bagian dari roadmap **P1**. Bagian ini menjelaskan perilaku final yang akan diterapkan.
 
 ### Preview
 Preview CV menampilkan watermark samar dan berulang:
@@ -101,8 +100,6 @@ Watermark ini tidak terlihat secara visual, tetapi dapat diidentifikasi melalui 
 
 ## Import JSON dan Sample
 
-> Alur import yang dijelaskan di sini adalah target **P0**. Saat ini import masih berupa validasi dasar tanpa preview dan sample.
-
 Import tidak langsung mengganti draft. Alurnya:
 
 1. Klik **Import**.
@@ -114,13 +111,13 @@ Import tidak langsung mengganti draft. Alurnya:
 7. Preview dokumen yang akan diimport ditampilkan.
 8. Klik **Ganti draft** untuk menerapkan, atau **Batal**.
 
-Sample akan tersedia di (P0):
+Sample tersedia di:
 
 ```
 /sample-resume.json
 ```
 
-Sample berisi data dummy lengkap untuk semua section. Sample tidak otomatis dimasukkan ke draft; pengguna harus mengunduh dan mengimportnya secara sadar.
+Sample berisi data dummy lengkap untuk semua section. Sample tidak otomatis dimasukkan ke draft; pengguna harus mengunduh dan mengimportnya secara sadar. Import tidak membawa foto; foto lama di perangkat dihapus saat draft diganti.
 
 ### Format JSON
 
@@ -194,11 +191,18 @@ Catatan:
 Kebutuhan:
 
 - Node.js 20+
-- npm
+- npm atau pnpm
 
 ```bash
 npm install
 npm run dev
+```
+
+Jika `npm install` gagal pada environment Windows tertentu, gunakan pnpm:
+
+```bash
+npx --yes pnpm@9.15.9 install
+npx --yes pnpm@9.15.9 dev
 ```
 
 Buka `http://localhost:3000`.
@@ -235,11 +239,24 @@ npm run lint
 npm run test:run
 ```
 
+Test end-to-end memakai Playwright:
+
+```bash
+npm run test:e2e:install
+npm run test:e2e
+npm run test:e2e:ui
+```
+
+Playwright menjalankan dev server otomatis di port `3100` dengan Turnstile dinonaktifkan.
+
 Status verifikasi saat ini:
 
-- `npm run build` sudah lulus.
-- `npm run test:run` masih diperbaiki di P0 (masalah worker Vitest/undici).
-- `npm run lint` belum dijadikan bukti sampai P0 selesai.
+- `npm run build` lulus (termasuk lint dan type-check).
+- `npm run test:run` lulus: 5 file, 22 test.
+- `npm run test:e2e` lulus: 3 test Playwright.
+- `npm run lint` dapat dijalankan terpisah dan lulus.
+- Export PDF memakai dialog print browser, bukan `html2canvas`/`jsPDF`.
+- Print desktop/mobile diuji dengan Chrome headless: hanya CV yang tercetak dan watermark teks PDF dapat diekstrak.
 
 ---
 
@@ -278,21 +295,22 @@ src/
   app/                 Halaman utama, layout, global CSS
   components/
     editor/            Tiptap editor dan wrapper
-    form/              Form section dan upload foto
-    layout/            AppShell desktop dan MobileTabs
-    preview/           Preview CV dan foto
-    shared/            Header actions, export, Turnstile
+    form/              Form section, pengaturan template, upload foto
+    layout/            AppShell desktop, MobileTabs, save status
+    preview/           Preview CV, foto, dan watermark
+    shared/            Header actions, tombol print, Turnstile
     ui/                Komponen shadcn/ui
   lib/
-    constants/         Default resume
-    models/            Tipe data
+    constants/         Default resume, daftar font
+    models/            Tipe data dan schema Zod
     storage/           IndexedDB
-    utils/             Sanitasi dan helper
+    utils/             Sanitasi, import JSON, helper
+    watermark.ts       Brand + fingerprint dokumen
   store/               Resume context + autosave
   styles/              Tema Monokai dan print stylesheet
 public/
   _headers
-  sample-resume.json   (ditambahkan pada P0)
+  sample-resume.json
 functions/
   verify-turnstile.ts
 ```
@@ -301,7 +319,9 @@ functions/
 
 ## Roadmap
 
-### P0 — Keamanan dan kejujuran
+Status: **P0 dan P1 selesai**; print desktop/mobile dan watermark PDF sudah diverifikasi dengan Chrome headless.
+
+### P0 � Keamanan dan kejujuran
 
 - Perbaiki test runner.
 - Sanitasi HTML dan URL di semua alur.
@@ -311,7 +331,7 @@ functions/
 - `beforeunload` untuk perubahan belum tersimpan.
 - Konfirmasi hapus item; hapus ikon reorder palsu.
 
-### P1 — Watermark dan kelengkapan
+### P1 � Watermark dan kelengkapan
 
 - Watermark preview terlihat + watermark PDF tersembunyi.
 - Export PDF via `window.print()`.
@@ -337,7 +357,8 @@ Detail lengkap ada di [PLAN.md](./PLAN.md).
 - Ketersediaan font CV bergantung pada font di perangkat pengguna.
 - Hasil PDF dapat berbeda sedikit tergantung browser, printer, dan pengaturan margin.
 - Turnstile memuat script eksternal dari Cloudflare.
-- Test runner masih diperbaiki.
+- Reorder section/item tidak tersedia.
+- `npm install` dapat gagal pada sebagian environment Windows; gunakan pnpm sesuai petunjuk di atas.
 
 ---
 

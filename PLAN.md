@@ -70,12 +70,12 @@ Aplikasi ini 100% client-side. Karena itu:
 - **lucide-react** untuk ikon
 - **sonner** untuk toast
 
-### Dependency yang akan dihapus pada P1
+### Dependency yang dihapus pada P1
 
 - `html2canvas`
 - `jspdf`
 
-Keduanya tidak lagi dipakai setelah export PDF berpindah ke `window.print()`.
+Keduanya sudah dihapus setelah export PDF berpindah ke `window.print()`.
 
 ### Aset lokal
 
@@ -108,7 +108,7 @@ ResumeContext (useReducer)
 - Status simpan harus ditampilkan jujur: `idle`, `saving`, `saved`, `error`.
 - ID section/item stabil dan tidak boleh memakai index array sebagai identitas.
 
-### Struktur folder saat ini
+### Struktur folder
 
 ```
 src/
@@ -118,17 +118,18 @@ src/
     globals.css
   components/
     editor/        TiptapEditor, TiptapWrapper
-    form/          FormSections, PhotoUpload
+    form/          FormSections, PhotoUpload, ResumeSettings
     layout/        AppShell, MobileTabs
-    preview/       ResumePreview, PreviewPhoto
-    shared/        ExportPdfButton, HeaderActions,
+    preview/       ResumePreview, PreviewPhoto, ResumeWatermark
+    shared/        ExportPdfButton, HeaderActions, SaveStatus,
                    HomeTurnstileWrapper, TurnstileWidget
     ui/            komponen shadcn/ui
   lib/
-    constants/     defaults.ts
-    models/        types.ts
+    constants/     defaults.ts, fonts.ts
+    models/        types.ts, schema.ts
     storage/       db.ts
-    utils/         sanitize.ts, cn.ts
+    utils/         sanitize.ts, import.ts, cn.ts
+    watermark.ts   brand + fingerprint dokumen
   store/
     resume-context.tsx
   styles/
@@ -136,21 +137,15 @@ src/
     print.css
 public/
   _headers
-  sample-resume.json        (ditambahkan pada P0)
+  sample-resume.json
 functions/
   verify-turnstile.ts       (Cloudflare Pages Function)
+__tests__/                  unit test (Vitest)
+e2e/                        end-to-end test (Playwright)
+playwright.config.ts        konfigurasi Playwright
 ```
 
-### Struktur yang akan ditambahkan
-
-```
-src/lib/models/schema.ts             validasi Zod untuk import
-src/lib/watermark.ts                 konstanta + metadata watermark
-src/components/preview/ResumeWatermark.tsx
-src/components/shared/ImportPreviewDialog.tsx
-src/components/preview/templates/    renderer ATS Classic & Minimal
-__tests__/                           unit test
-```
+Renderer ATS Classic dan Minimal saat ini berada di `ResumePreview` melalui kelas dan kondisi template, bukan folder renderer terpisah.
 
 ### Batas tanggung jawab
 
@@ -158,8 +153,8 @@ __tests__/                           unit test
 - `components` menangani UI, editor, form, preview, dan dialog.
 - `lib/models` berisi tipe dan schema validasi.
 - `lib/storage` hanya berisi bridge IndexedDB.
-- `lib/utils` berisi sanitasi, validasi URL, dan helper.
-- `templates` berisi renderer tampilan CV, bukan state.
+- `lib/utils` berisi sanitasi, validasi URL, import, dan helper.
+- `ResumePreview` memilih tampilan template berdasarkan `settings.template`.
 
 ---
 
@@ -302,7 +297,7 @@ Sample lengkap akan tersedia di `public/sample-resume.json` dan dapat diunduh da
 
 - **Tidak dikerjakan.** Tidak ada drag-and-drop, tombol naik/turun, atau ikon grip palsu.
 - Urutan mengikuti field `order` yang tersimpan.
-- Ikon `GripVertical` saat ini harus dihapus pada P0.
+- Ikon `GripVertical` sudah dihapus pada P0.
 
 ### 6.11 Template
 
@@ -315,9 +310,9 @@ Sample lengkap akan tersedia di `public/sample-resume.json` dan dapat diunduh da
 ### 6.12 Foto
 
 - Upload JPG/PNG/WebP, validasi MIME dan ukuran maksimal 2 MB.
-- Resize/compress di browser (sisi maksimal 400px, JPEG kualitas 0.8).
+- Resize/compress di browser (center-crop persegi, sisi maksimal 400px, JPEG kualitas 0.85).
 - Simpan blob di IndexedDB.
-- Preview sebelum simpan dan crop sederhana (P1).
+- Preview sebelum simpan dan crop sederhana sudah tersedia.
 - Tampilkan/sembunyikan, ganti, dan hapus.
 - Foto default off pada ATS Classic.
 - Blob lama harus dihapus saat foto diganti.
@@ -479,55 +474,57 @@ Sample import:
 
 ## 9. Roadmap P0 — Keamanan, Import, dan Status Simpan
 
+Status: **selesai**.
+
 P0 harus selesai dan diverifikasi sebelum P1.
 
 ### P0.1 Perbaiki test runner
 
-- [ ] Ganti environment Vitest dari `jsdom` ke `happy-dom` atau pin versi yang kompatibel.
-- [ ] Pastikan `npm run test:run` benar-benar menjalankan test.
-- [ ] Pertahankan 3 test yang sudah ada dan tambah test baru.
-- [ ] `npm run build` dan `npm run lint` harus lulus.
+- [x] Ganti environment Vitest dari `jsdom` ke `happy-dom` atau pin versi yang kompatibel.
+- [x] Pastikan `npm run test:run` benar-benar menjalankan test.
+- [x] Pertahankan 3 test yang sudah ada dan tambah test baru.
+- [x] `npm run build` dan `npm run lint` harus lulus.
 
 ### P0.2 Sanitasi menyeluruh
 
-- [ ] Perluas `src/lib/utils/sanitize.ts` dengan validasi URL.
-- [ ] Terapkan sanitasi pada preview, import, dan export.
-- [ ] Validasi `href` proyek dan link kredensial.
-- [ ] Konfigurasi Link Tiptap agar hanya menerima protokol aman.
-- [ ] Test payload XSS: `<script>`, `onerror`, `javascript:`, `iframe`.
-- [ ] Pastikan `sanitizeHtml` tidak lagi hanya dipakai di test.
+- [x] Perluas `src/lib/utils/sanitize.ts` dengan validasi URL.
+- [x] Terapkan sanitasi pada preview, import, dan export.
+- [x] Validasi `href` proyek dan link kredensial.
+- [x] Konfigurasi Link Tiptap agar hanya menerima protokol aman.
+- [x] Test payload XSS: `<script>`, `onerror`, `javascript:`, `iframe`.
+- [x] Pastikan `sanitizeHtml` tidak lagi hanya dipakai di test.
 
 ### P0.3 Import aman + sample + preview
 
-- [ ] Buat `src/lib/models/schema.ts` dengan Zod.
-- [ ] Batasi ukuran file 2 MB.
-- [ ] Cek `schemaVersion`.
-- [ ] Buat modal import (`ImportPreviewDialog`).
-- [ ] Gate Turnstile sebelum file picker.
-- [ ] Refactor `ResumePreview` agar menerima `document?: ResumeDocument` dan `showWatermark?: boolean`.
-- [ ] Tampilkan preview dokumen import.
-- [ ] Tambah tombol unduh `/sample-resume.json`.
-- [ ] Buat `public/sample-resume.json` berisi data dummy lengkap.
-- [ ] Hapus `photoId`, set `showPhoto=false` saat import, tampilkan peringatan.
-- [ ] Fallback template/font tidak dikenal.
-- [ ] Import invalid tidak mengubah draft.
-- [ ] Konfirmasi sebelum mengganti draft.
+- [x] Buat `src/lib/models/schema.ts` dengan Zod.
+- [x] Batasi ukuran file 2 MB.
+- [x] Cek `schemaVersion`.
+- [x] Buat modal import dengan preview (diimplementasikan di `HeaderActions`).
+- [x] Gate Turnstile sebelum file picker.
+- [x] Refactor `ResumePreview` agar menerima `document?: ResumeDocument` dan `showWatermark?: boolean`.
+- [x] Tampilkan preview dokumen import.
+- [x] Tambah tombol unduh `/sample-resume.json`.
+- [x] Buat `public/sample-resume.json` berisi data dummy lengkap.
+- [x] Hapus `photoId`, set `showPhoto=false` saat import, tampilkan peringatan.
+- [x] Fallback template/font tidak dikenal.
+- [x] Import invalid tidak mengubah draft.
+- [x] Konfirmasi sebelum mengganti draft.
 
 ### P0.4 Status simpan dan error
 
-- [ ] Tambah `saveStatus` dan `saveError` pada context.
-- [ ] Set `isLoading=false` setelah restore selesai.
-- [ ] Tampilkan indikator menyimpan/tersimpan/gagal di header.
-- [ ] Tangani IndexedDB tidak didukung dan quota penuh.
-- [ ] Tambah `beforeunload` jika belum tersimpan.
-- [ ] Hapus `catch {}` yang menelan error.
+- [x] Tambah `saveStatus` dan `saveError` pada context.
+- [x] Set `isLoading=false` setelah restore selesai.
+- [x] Tampilkan indikator menyimpan/tersimpan/gagal di header.
+- [x] Tangani IndexedDB tidak didukung dan quota penuh.
+- [x] Tambah `beforeunload` jika belum tersimpan.
+- [x] Hapus `catch {}` yang menelan error.
 
 ### P0.5 Perbaikan interaksi
 
-- [ ] Konfirmasi hapus item berisi data.
-- [ ] Hapus ikon `GripVertical`.
-- [ ] Pastikan reset menghapus draft dan blob foto.
-- [ ] Gate Turnstile sebelum file picker dibuka.
+- [x] Konfirmasi hapus item berisi data.
+- [x] Hapus ikon `GripVertical`.
+- [x] Pastikan reset menghapus draft dan blob foto.
+- [x] Gate Turnstile sebelum file picker dibuka.
 
 ### Kriteria selesai P0
 
@@ -542,71 +539,73 @@ P0 harus selesai dan diverifikasi sebelum P1.
 
 ## 10. Roadmap P1 — Watermark dan Kelengkapan Fitur
 
+Status: **diimplementasikan dan diverifikasi**. Print desktop/mobile diuji dengan Chrome headless: hanya CV yang tercetak, watermark PDF dapat diekstrak.
+
 ### P1.1 Watermark
 
-- [ ] Buat `src/lib/watermark.ts`:
+- [x] Buat `src/lib/watermark.ts`:
   - teks brand;
   - helper metadata dokumen (`id`, timestamp).
-- [ ] Buat `ResumeWatermark` untuk preview.
-- [ ] Style watermark di `monokai.css` (screen) dan `print.css` (print).
-- [ ] Watermark preview selalu tampil, tanpa toggle.
-- [ ] Watermark print tersembunyi secara visual, berisi brand + ID + timestamp.
-- [ ] Pastikan watermark tidak memuat data pribadi.
-- [ ] Tambahkan catatan batasan watermark di README.
+- [x] Buat `ResumeWatermark` untuk preview.
+- [x] Style watermark di `monokai.css` (screen) dan `print.css` (print).
+- [x] Watermark preview selalu tampil, tanpa toggle.
+- [x] Watermark print tersembunyi secara visual, berisi brand + ID + timestamp.
+- [x] Pastikan watermark tidak memuat data pribadi.
+- [x] Tambahkan catatan batasan watermark di README.
 
 ### P1.2 Export PDF/Print
 
-- [ ] Ganti isi `ExportPdfButton` menjadi `window.print()`.
-- [ ] Hapus `html2canvas` dan `jsPDF` dari dependency.
-- [ ] Perbaiki `print.css`:
+- [x] Ganti isi `ExportPdfButton` menjadi `window.print()`.
+- [x] Hapus `html2canvas` dan `jsPDF` dari dependency.
+- [x] Perbaiki `print.css`:
   - hanya CV yang tercetak;
   - A4, margin aman;
   - header/form/tab/status hilang;
   - mobile tetap mencetak `#resume-preview`;
   - watermark preview disembunyikan, watermark print ditampilkan.
-- [ ] Tetap cek Turnstile.
-- [ ] Uji print desktop dan mobile viewport.
+- [x] Tetap cek Turnstile.
+- [x] Uji print desktop dan mobile viewport (diverifikasi dengan Chrome headless).
 
 ### P1.3 Field dan kontak
 
-- [ ] Pendidikan: lokasi + IPK.
-- [ ] Proyek: periode.
-- [ ] Sertifikasi: link kredensial + deskripsi.
-- [ ] Preview menampilkan LinkedIn, GitHub, website.
-- [ ] Form mobile lengkap: lokasi, LinkedIn, GitHub, website.
-- [ ] Preview proyek memakai link yang tervalidasi.
+- [x] Pendidikan: lokasi + IPK.
+- [x] Proyek: periode.
+- [x] Sertifikasi: link kredensial + deskripsi.
+- [x] Preview menampilkan LinkedIn, GitHub, website.
+- [x] Form mobile lengkap: lokasi, LinkedIn, GitHub, website.
+- [x] Preview proyek memakai link yang tervalidasi.
 
 ### P1.4 Template
 
-- [ ] Buat renderer **ATS Classic**.
-- [ ] Buat renderer **Minimal**.
-- [ ] Selector template di desktop dan mobile.
-- [ ] `settings.template` benar-benar memengaruhi preview/print.
-- [ ] ATS Classic default dan foto off.
+- [x] Buat renderer **ATS Classic**.
+- [x] Buat renderer **Minimal**.
+- [x] Selector template di desktop dan mobile.
+- [x] `settings.template` benar-benar memengaruhi preview/print.
+- [x] ATS Classic default dan foto off.
 
 ### P1.5 Tiptap
 
-- [ ] Perbaiki ikon bullet/undo/redo yang rusak.
-- [ ] Tambah link dialog (tambah/edit/hapus).
-- [ ] Tambah mode single-line.
-- [ ] Tambah `aria-label`, tooltip, focus state.
-- [ ] Pastikan perubahan konten tidak merusak selection/kursor.
-- [ ] Sanitasi konten saat update.
+- [x] Perbaiki ikon bullet/undo/redo yang rusak.
+- [x] Tambah link dialog (tambah/edit/hapus).
+- [x] Tambah mode single-line.
+- [x] Tambah `aria-label`, tooltip, focus state.
+- [x] Pastikan perubahan konten tidak merusak selection/kursor.
+- [x] Sanitasi konten saat update.
 
 ### P1.6 Foto
 
-- [ ] Crop/preview sebelum simpan.
-- [ ] Hapus blob lama saat foto diganti.
-- [ ] Reset menghapus seluruh foto di IndexedDB.
-- [ ] Tampilkan catatan netral tentang kebutuhan foto yang berbeda per negara/industri.
+- [x] Crop/preview sebelum simpan.
+- [x] Hapus blob lama saat foto diganti.
+- [x] Reset menghapus seluruh foto di IndexedDB.
+- [x] Tampilkan catatan netral tentang kebutuhan foto yang berbeda per negara/industri.
 
 ### P1.7 Dokumentasi
 
-- [ ] Update README dengan fitur final, batasan, dan deploy.
-- [ ] Catat bahwa reorder dan DOCX tidak tersedia.
-- [ ] Catat batasan watermark.
-- [ ] Catat sample import.
-- [ ] Catat deviasi dari rencana awal Rust/Leptos.
+- [x] Update README dengan fitur final, batasan, dan deploy.
+- [x] Catat bahwa reorder dan DOCX tidak tersedia.
+- [x] Catat batasan watermark.
+- [x] Catat sample import.
+- [x] Catat deviasi dari rencana awal Rust/Leptos.
 
 ### Kriteria selesai P1
 
@@ -630,30 +629,43 @@ npm run dev
 npm run build
 npm run lint
 npm run test:run
+npm run test:e2e:install
+npm run test:e2e
 ```
 
 Status verifikasi saat dokumen ini diperbarui:
 
-- `npm run build` sudah pernah lulus.
-- `npm run test:run` masih bermasalah dan diperbaiki di P0.
-- `npm run lint` belum dijadikan bukti sampai P0 selesai.
+- `npm run build` lulus, termasuk lint dan type-check.
+- `npm run test:run` lulus: 5 file, 22 test.
+- `npm run test:e2e` lulus: 3 test Playwright (form/preview/watermark, import sample, mode print).
+- `npm run lint` lulus.
+- Export PDF memakai `window.print()`; `html2canvas` dan `jsPDF` sudah dihapus.
+- Print desktop dan mobile diuji dengan Chrome headless; PDF hanya berisi CV dan watermark teks dapat diekstrak.
+- Import valid/invalid, batal import, penerapan sample, upload/persistensi foto, switch template, reset, watermark, dan print CV terisi sudah diuji dengan Playwright + Chrome headless tanpa console error.
+- Turnstile diuji dengan test key resmi Cloudflare dan endpoint siteverify nyata: widget lolos, /verify-turnstile mengembalikan success: true, aplikasi terbuka, dan tidak ada error console. Site key/secret produksi tetap perlu smoke test setelah deploy.
+- Simulasi IndexedDB gagal/penuh diuji dengan memaksa IDBObjectStore.put melempar QuotaExceededError: status gagal tampil dan pulih setelah penyimpanan normal.
+- Peringatan tutup tab dan keyboard navigation sudah diuji otomatis dengan Playwright.
 
-### Uji manual wajib
+### Checklist regresi
 
-- Import sample JSON valid.
-- Import JSON invalid.
-- Import JSON dengan `<script>`, `onerror`, dan `javascript:`.
-- Batal import: draft lama tetap utuh.
-- Import saat Turnstile belum terverifikasi.
-- Reload halaman: draft dan foto kembali.
-- Simulasi IndexedDB gagal/penuh: status error tampil.
-- Tutup tab saat belum tersimpan: ada peringatan.
-- Preview watermark terlihat.
-- Print desktop: hanya CV yang tercetak.
-- Print mobile: hanya CV yang tercetak.
-- PDF hasil print: watermark tidak terlihat, tetapi teks watermark dapat diekstrak.
-- Tidak ada request data CV keluar selain token Turnstile.
-- Tab order, focus ring, label, dan keyboard navigation.
+- [x] Import sample JSON valid (Playwright).
+- [x] Import JSON invalid (Playwright).
+- [x] Import JSON dengan `<script>`, `onerror`, dan `javascript:` (unit test sanitasi).
+- [x] Batal import: draft lama tetap utuh (Playwright).
+- [x] Import mengganti draft menghapus blob foto lama (Playwright).
+- [x] Gate Turnstile menahan aplikasi sampai verifikasi berhasil (Playwright, test key resmi).
+- [x] Reload halaman: draft dan foto kembali (Playwright).
+- [x] Ganti foto menghapus blob lama, menyisakan satu foto di IndexedDB (Playwright).
+- [x] Reset menghapus draft dan blob foto (Playwright).
+- [x] Simulasi IndexedDB gagal/penuh: status error tampil (Playwright).
+- [x] Tutup tab saat belum tersimpan: ada peringatan (Playwright menerima dialog `beforeunload`).
+- [x] Preview watermark terlihat (Playwright).
+- [x] Print desktop: hanya CV yang tercetak (Chrome headless).
+- [x] Print mobile: hanya CV yang tercetak (Chrome headless).
+- [x] PDF hasil print: watermark tidak terlihat, tetapi teks watermark dapat diekstrak (pypdf).
+- [x] PDF CV terisi: satu halaman, hanya konten CV, tanpa UI aplikasi (Playwright + pypdf).
+- [x] Tidak ada request data CV keluar selain token Turnstile (audit request Playwright: hanya asset lokal dan script Turnstile).
+- [x] Tab order, focus ring, dan label (Playwright: 24 elemen berurutan, outline 2px, label/aria-label tersedia); uji screen reader manual belum dilakukan.
 
 ---
 
@@ -690,8 +702,9 @@ Status verifikasi saat dokumen ini diperbarui:
 - **Foto di JSON**: blob tidak ikut; import di perangkat lain tidak membawa foto.
 - **Ketersediaan font**: Calibri/Aptos bergantung pada font yang terpasang di perangkat; browser akan fallback.
 - **Hasil PDF**: dapat berbeda sedikit tergantung browser, printer, dan pengaturan margin.
-- **Turnstile**: memuat script eksternal dari Cloudflare; hanya token yang dikirim, bukan data CV.
-- **Test runner**: masih diperbaiki di P0.
+- **Turnstile**: memuat script eksternal dari Cloudflare; hanya token yang dikirim, bukan data CV. Karena aplikasi static, gate Turnstile adalah penghalang UX/spam, bukan access control; pengguna teknis dapat memodifikasi `sessionStorage` atau bundle.
+- **Watermark**: best-effort, bukan DRM. Teks PDF dapat dihapus dengan tools pengolah PDF.
+- **Uji print**: sudah diverifikasi dengan Chrome headless; hasil printer nyata tetap dapat berbeda.
 
 ---
 
@@ -700,23 +713,23 @@ Status verifikasi saat dokumen ini diperbarui:
 | Area | Status | Catatan |
 |---|---|---|
 | Next.js static export | Selesai | `npm run build` lulus |
-| Layout desktop/mobile | Selesai | Dua panel + tab mobile |
-| Model data TypeScript | Selesai | `schemaVersion`, ID stabil |
-| Form semua section | Sebagian | Beberapa field belum lengkap |
-| Tiptap | Sebagian | Link/single-line belum ada; ikon rusak |
-| Live preview | Sebagian | Kontak LinkedIn/GitHub/website belum tampil |
-| Template ganda | Belum | Baru satu renderer |
-| Foto | Sebagian | Upload/compress/IDB sudah; crop belum |
-| Autosave/restore | Sebagian | Restore ada; status simpan belum |
-| Import JSON | Sebagian | Validasi dangkal; preview/sample belum |
-| Export JSON | Sebagian | Berfungsi; sanitasi belum |
-| Export PDF | Belum sesuai | Masih html2canvas/jsPDF, belum print |
-| Sanitasi | Belum | DOMPurify belum dipakai di alur utama |
-| Watermark | Belum | Direncanakan di P1 |
+| Layout desktop/mobile | Selesai | Dua panel + tab mobile + salinan print |
+| Model data TypeScript | Selesai | `schemaVersion`, ID stabil, field lengkap |
+| Form semua section | Selesai | Termasuk lokasi/IPK, periode, link kredensial |
+| Tiptap | Selesai | Link dialog, single-line, ikon, aria, sanitasi blur |
+| Live preview | Selesai | Kontak, field baru, dua template |
+| Template ganda | Selesai | ATS Classic + Minimal |
+| Foto | Selesai | Center-crop, preview sebelum simpan, blob lama dibersihkan |
+| Autosave/restore | Selesai | Status menyimpan/tersimpan/gagal + beforeunload |
+| Import JSON | Selesai | Zod, 2 MB, schema version, preview, sample |
+| Export JSON | Selesai | Sanitasi, tanpa blob foto |
+| Export PDF | Selesai | `window.print()`, A4, hanya CV |
+| Sanitasi | Selesai | DOMPurify + validasi URL di preview/import/export |
+| Watermark | Selesai | Preview terlihat, PDF tersembunyi |
 | Turnstile | Selesai | Gate homepage + export/import |
 | Reorder | Tidak dikerjakan | Sengaja dihapus dari scope |
-| Test | Sebagian | Test ditulis; runner gagal |
-| README | Diperbarui | Mengikuti rencana baru |
+| Test | Selesai | 5 file/22 test unit + 3 test E2E Playwright |
+| README | Selesai | Fitur final, batasan, deploy |
 
 ---
 
