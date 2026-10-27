@@ -7,6 +7,8 @@ const TiptapEditor = dynamic(() => import('./TiptapEditor'), { ssr: false });
 interface Props {
   content: string;
   onChange: (html: string, text: string) => void;
+  singleLine?: boolean;
+  label?: string;
 }
 
 export default function TiptapWrapper(props: Props) {
