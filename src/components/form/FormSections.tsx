@@ -1,16 +1,16 @@
-﻿'use client';
+'use client';
 
 import { useResume } from '@/store/resume-context';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, Trash2, GripVertical } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
-import { ResumeSection } from '@/lib/models/types';
+import { ResumeSection, SectionItem, SectionType } from '@/lib/models/types';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import TiptapWrapper from '@/components/editor/TiptapWrapper';
 
-const sectionTypes = [
+const sectionTypes: { type: SectionType; title: string }[] = [
   { type: 'experience', title: 'Pengalaman Kerja' },
   { type: 'education', title: 'Pendidikan' },
   { type: 'projects', title: 'Proyek' },
@@ -23,10 +23,10 @@ export default function FormSections() {
   const { state, dispatch } = useResume();
   const doc = state.document;
 
-  const addSection = (type: string, title: string) => {
+  const addSection = (type: SectionType, title: string) => {
     const newSection: ResumeSection = {
       id: uuidv4(),
-      type: type as ResumeSection['type'],
+      type,
       title,
       visible: true,
       order: doc.sections.length,
@@ -45,27 +45,56 @@ export default function FormSections() {
     dispatch({ type: 'UPDATE_SECTION', payload: { id, data: { visible: !visible } } });
   };
 
-  const addItem = (sectionId: string, item: any) => {
-    const sections = doc.sections.map(s => {
+  const addItem = (sectionId: string, item: Omit<SectionItem, 'id'>) => {
+    const sections = doc.sections.map((s) => {
       if (s.id !== sectionId) return s;
       return { ...s, items: [...(s.items || []), { id: uuidv4(), ...item }] };
     });
     dispatch({ type: 'REORDER_SECTIONS', payload: sections });
   };
 
-  const updateItem = (sectionId: string, itemId: string, field: string, value: unknown) => {
-    const sections = doc.sections.map(s => {
+  const updateItem = (sectionId: string, itemId: string, field: keyof SectionItem, value: SectionItem[keyof SectionItem]) => {
+    const sections = doc.sections.map((s) => {
       if (s.id !== sectionId) return s;
-      const items = (s.items || []).map((it: any) => it.id === itemId ? { ...it, [field]: value } : it);
+      const items = (s.items || []).map((it) => it.id === itemId ? { ...it, [field]: value } as SectionItem : it);
       return { ...s, items };
     });
     dispatch({ type: 'REORDER_SECTIONS', payload: sections });
   };
 
-  const removeItem = (sectionId: string, itemId: string) => {
-    const sections = doc.sections.map(s => {
+  const itemHasData = (item: SectionItem) => {
+    const values = [
+      item.position,
+      item.company,
+      item.location,
+      item.startDate,
+      item.endDate,
+      item.school,
+      item.degree,
+      item.grade,
+      item.name,
+      item.url,
+      item.period,
+      item.issuer,
+      item.date,
+      item.credentialUrl,
+      item.level,
+    ];
+    const hasField = values.some((value) => typeof value === 'string' && value.trim().length > 0);
+    const hasDescription = Boolean(
+      item.description?.text?.trim()
+      || item.description?.html?.replace(/<[^>]*>/g, '').trim()
+      || item.notes?.text?.trim()
+      || item.notes?.html?.replace(/<[^>]*>/g, '').trim(),
+    );
+    return hasField || hasDescription;
+  };
+
+  const removeItem = (sectionId: string, item: SectionItem) => {
+    if (itemHasData(item) && !confirm('Hapus item ini? Data yang sudah diisi akan hilang.')) return;
+    const sections = doc.sections.map((s) => {
       if (s.id !== sectionId) return s;
-      const items = (s.items || []).filter((it: any) => it.id !== itemId);
+      const items = (s.items || []).filter((it) => it.id !== item.id);
       return { ...s, items };
     });
     dispatch({ type: 'REORDER_SECTIONS', payload: sections });
@@ -85,17 +114,16 @@ export default function FormSections() {
           </div>
         </CardHeader>
         <CardContent className='space-y-2'>
-          {doc.sections.sort((a,b)=>a.order-b.order).map((s) => (
+          {[...doc.sections].sort((a, b) => a.order - b.order).map((s) => (
             <div key={s.id} className='flex items-center justify-between border rounded p-2'>
               <div className='flex items-center gap-2'>
-                <GripVertical className='w-4 h-4 text-gray-400' />
-                <span className={s.visible ? '' : 'text-gray-400'}>{s.title}</span>
+                <span className={s.visible ? '' : 'text-muted-foreground'}>{s.title}</span>
               </div>
               <div className='flex gap-1'>
                 <Button size='sm' variant='ghost' onClick={() => toggleSection(s.id, s.visible)}>
                   {s.visible ? 'Sembunyikan' : 'Tampilkan'}
                 </Button>
-                <Button size='sm' variant='ghost' onClick={() => removeSection(s.id)}>
+                <Button size='sm' variant='ghost' onClick={() => removeSection(s.id)} aria-label={`Hapus bagian ${s.title}`}>
                   <Trash2 className='w-4 h-4' />
                 </Button>
               </div>
@@ -104,137 +132,148 @@ export default function FormSections() {
         </CardContent>
       </Card>
 
-      {doc.sections.filter(s=>s.visible && s.type==='experience').map((s) => (
+      {doc.sections.filter((s) => s.visible && s.type === 'experience').map((s) => (
         <Card key={s.id}>
           <CardHeader className='flex flex-row items-center justify-between'>
             <CardTitle>{s.title}</CardTitle>
             <Button size='sm' onClick={() => addItem(s.id, { position: '', company: '', location: '', startDate: '', endDate: '', current: false, description: { html: '', text: '' } })}><Plus className='w-4 h-4 mr-1' />Tambah Pengalaman</Button>
           </CardHeader>
           <CardContent className='space-y-4'>
-            {(s.items || []).map((item: any) => (
+            {(s.items || []).map((item) => (
               <div key={item.id} className='border rounded p-3 space-y-2'>
                 <div className='grid grid-cols-2 gap-2'>
-                  <div><Label>Posisi</Label><Input value={item.position || ''} onChange={(e) => updateItem(s.id, item.id, 'position', e.target.value)} /></div>
-                  <div><Label>Perusahaan</Label><Input value={item.company || ''} onChange={(e) => updateItem(s.id, item.id, 'company', e.target.value)} /></div>
+                  <div><Label>Posisi</Label><Input aria-label='Posisi' value={item.position || ''} onChange={(e) => updateItem(s.id, item.id, 'position', e.target.value)} /></div>
+                  <div><Label>Perusahaan</Label><Input aria-label='Perusahaan' value={item.company || ''} onChange={(e) => updateItem(s.id, item.id, 'company', e.target.value)} /></div>
                 </div>
+                <div><Label>Lokasi</Label><Input aria-label='Lokasi' value={item.location || ''} onChange={(e) => updateItem(s.id, item.id, 'location', e.target.value)} /></div>
                 <div className='grid grid-cols-2 gap-2'>
-                  <div><Label>Mulai</Label><Input value={item.startDate || ''} onChange={(e) => updateItem(s.id, item.id, 'startDate', e.target.value)} /></div>
-                  <div><Label>Selesai</Label><Input value={item.endDate || ''} onChange={(e) => updateItem(s.id, item.id, 'endDate', e.target.value)} disabled={item.current} /></div>
+                  <div><Label>Mulai</Label><Input aria-label='Mulai' value={item.startDate || ''} onChange={(e) => updateItem(s.id, item.id, 'startDate', e.target.value)} /></div>
+                  <div><Label>Selesai</Label><Input aria-label='Selesai' value={item.endDate || ''} onChange={(e) => updateItem(s.id, item.id, 'endDate', e.target.value)} disabled={item.current} /></div>
                 </div>
                 <label className='flex items-center gap-2 text-sm'><input type='checkbox' checked={!!item.current} onChange={(e) => updateItem(s.id, item.id, 'current', e.target.checked)} /> Masih bekerja di sini</label>
-                <div><Label>Deskripsi & Pencapaian</Label><TiptapWrapper content={item.description?.html || ''} onChange={(html, text) => updateItem(s.id, item.id, 'description', { html, text })} /></div>
-                <Button size='sm' variant='destructive' onClick={() => removeItem(s.id, item.id)}><Trash2 className='w-4 h-4 mr-1' />Hapus</Button>
+                <div><Label>Deskripsi & Pencapaian</Label><TiptapWrapper content={item.description?.html || ''} onChange={(html, text) => updateItem(s.id, item.id, 'description', { html, text })} label='Deskripsi dan pencapaian pengalaman' /></div>
+                <Button size='sm' variant='destructive' onClick={() => removeItem(s.id, item)}><Trash2 className='w-4 h-4 mr-1' />Hapus</Button>
               </div>
             ))}
-            {(s.items || []).length === 0 && <p className='text-sm text-gray-500'>Belum ada item</p>}
+            {(s.items || []).length === 0 && <p className='text-sm text-muted-foreground'>Belum ada item</p>}
           </CardContent>
         </Card>
       ))}
 
-      {doc.sections.filter(s=>s.visible && s.type==='education').map((s) => (
+      {doc.sections.filter((s) => s.visible && s.type === 'education').map((s) => (
         <Card key={s.id}>
           <CardHeader className='flex flex-row items-center justify-between'>
             <CardTitle>{s.title}</CardTitle>
-            <Button size='sm' onClick={() => addItem(s.id, { school: '', degree: '', location: '', startDate: '', endDate: '', current: false, description: { html: '', text: '' } })}><Plus className='w-4 h-4 mr-1' />Tambah Pendidikan</Button>
+            <Button size='sm' onClick={() => addItem(s.id, { school: '', degree: '', location: '', grade: '', startDate: '', endDate: '', current: false, notes: { html: '', text: '' } })}><Plus className='w-4 h-4 mr-1' />Tambah Pendidikan</Button>
           </CardHeader>
           <CardContent className='space-y-4'>
-            {(s.items || []).map((item: any) => (
+            {(s.items || []).map((item) => (
               <div key={item.id} className='border rounded p-3 space-y-2'>
                 <div className='grid grid-cols-2 gap-2'>
-                  <div><Label>Institusi</Label><Input value={item.school || ''} onChange={(e) => updateItem(s.id, item.id, 'school', e.target.value)} /></div>
-                  <div><Label>Gelar/Jurusan</Label><Input value={item.degree || ''} onChange={(e) => updateItem(s.id, item.id, 'degree', e.target.value)} /></div>
+                  <div><Label>Institusi</Label><Input aria-label='Institusi' value={item.school || ''} onChange={(e) => updateItem(s.id, item.id, 'school', e.target.value)} /></div>
+                  <div><Label>Gelar/Jurusan</Label><Input aria-label='Gelar/Jurusan' value={item.degree || ''} onChange={(e) => updateItem(s.id, item.id, 'degree', e.target.value)} /></div>
                 </div>
                 <div className='grid grid-cols-2 gap-2'>
-                  <div><Label>Mulai</Label><Input value={item.startDate || ''} onChange={(e) => updateItem(s.id, item.id, 'startDate', e.target.value)} /></div>
-                  <div><Label>Selesai</Label><Input value={item.endDate || ''} onChange={(e) => updateItem(s.id, item.id, 'endDate', e.target.value)} disabled={item.current} /></div>
+                  <div><Label>Lokasi</Label><Input aria-label='Lokasi' value={item.location || ''} onChange={(e) => updateItem(s.id, item.id, 'location', e.target.value)} /></div>
+                  <div><Label>IPK/Nilai (opsional)</Label><Input aria-label='IPK/Nilai (opsional)' value={item.grade || ''} onChange={(e) => updateItem(s.id, item.id, 'grade', e.target.value)} /></div>
+                </div>
+                <div className='grid grid-cols-2 gap-2'>
+                  <div><Label>Mulai</Label><Input aria-label='Mulai' value={item.startDate || ''} onChange={(e) => updateItem(s.id, item.id, 'startDate', e.target.value)} /></div>
+                  <div><Label>Selesai</Label><Input aria-label='Selesai' value={item.endDate || ''} onChange={(e) => updateItem(s.id, item.id, 'endDate', e.target.value)} disabled={item.current} /></div>
                 </div>
                 <label className='flex items-center gap-2 text-sm'><input type='checkbox' checked={!!item.current} onChange={(e) => updateItem(s.id, item.id, 'current', e.target.checked)} /> Masih berlangsung</label>
-                <div><Label>Deskripsi</Label><TiptapWrapper content={item.description?.html || ''} onChange={(html, text) => updateItem(s.id, item.id, 'description', { html, text })} /></div>
-                <Button size='sm' variant='destructive' onClick={() => removeItem(s.id, item.id)}><Trash2 className='w-4 h-4 mr-1' />Hapus</Button>
+                <div><Label>Deskripsi</Label><TiptapWrapper content={item.notes?.html || item.description?.html || ''} onChange={(html, text) => updateItem(s.id, item.id, 'notes', { html, text })} label='Deskripsi pendidikan' /></div>
+                <Button size='sm' variant='destructive' onClick={() => removeItem(s.id, item)}><Trash2 className='w-4 h-4 mr-1' />Hapus</Button>
               </div>
             ))}
-            {(s.items || []).length === 0 && <p className='text-sm text-gray-500'>Belum ada item</p>}
+            {(s.items || []).length === 0 && <p className='text-sm text-muted-foreground'>Belum ada item</p>}
           </CardContent>
         </Card>
       ))}
 
-      {doc.sections.filter(s=>s.visible && s.type==='projects').map((s) => (
+      {doc.sections.filter((s) => s.visible && s.type === 'projects').map((s) => (
         <Card key={s.id}>
           <CardHeader className='flex flex-row items-center justify-between'>
             <CardTitle>{s.title}</CardTitle>
-            <Button size='sm' onClick={() => addItem(s.id, { name: '', url: '', description: { html: '', text: '' } })}><Plus className='w-4 h-4 mr-1' />Tambah Proyek</Button>
+            <Button size='sm' onClick={() => addItem(s.id, { name: '', url: '', period: '', description: { html: '', text: '' } })}><Plus className='w-4 h-4 mr-1' />Tambah Proyek</Button>
           </CardHeader>
           <CardContent className='space-y-4'>
-            {(s.items || []).map((item: any) => (
+            {(s.items || []).map((item) => (
               <div key={item.id} className='border rounded p-3 space-y-2'>
                 <div className='grid grid-cols-2 gap-2'>
-                  <div><Label>Nama Proyek</Label><Input value={item.name || ''} onChange={(e) => updateItem(s.id, item.id, 'name', e.target.value)} /></div>
-                  <div><Label>Link</Label><Input value={item.url || ''} onChange={(e) => updateItem(s.id, item.id, 'url', e.target.value)} /></div>
+                  <div><Label>Nama Proyek</Label><Input aria-label='Nama Proyek' value={item.name || ''} onChange={(e) => updateItem(s.id, item.id, 'name', e.target.value)} /></div>
+                  <div><Label>Link</Label><Input aria-label='Link' value={item.url || ''} onChange={(e) => updateItem(s.id, item.id, 'url', e.target.value)} /></div>
                 </div>
-                <div><Label>Deskripsi</Label><TiptapWrapper content={item.description?.html || ''} onChange={(html, text) => updateItem(s.id, item.id, 'description', { html, text })} /></div>
-                <Button size='sm' variant='destructive' onClick={() => removeItem(s.id, item.id)}><Trash2 className='w-4 h-4 mr-1' />Hapus</Button>
+                <div><Label>Periode (opsional)</Label><Input aria-label='Periode (opsional)' value={item.period || ''} onChange={(e) => updateItem(s.id, item.id, 'period', e.target.value)} /></div>
+                <div><Label>Deskripsi</Label><TiptapWrapper content={item.description?.html || ''} onChange={(html, text) => updateItem(s.id, item.id, 'description', { html, text })} label='Deskripsi proyek' /></div>
+                <Button size='sm' variant='destructive' onClick={() => removeItem(s.id, item)}><Trash2 className='w-4 h-4 mr-1' />Hapus</Button>
               </div>
             ))}
-            {(s.items || []).length === 0 && <p className='text-sm text-gray-500'>Belum ada item</p>}
+            {(s.items || []).length === 0 && <p className='text-sm text-muted-foreground'>Belum ada item</p>}
           </CardContent>
         </Card>
       ))}
 
-      {doc.sections.filter(s=>s.visible && s.type==='certifications').map((s) => (
+      {doc.sections.filter((s) => s.visible && s.type === 'certifications').map((s) => (
         <Card key={s.id}>
           <CardHeader className='flex flex-row items-center justify-between'>
             <CardTitle>{s.title}</CardTitle>
-            <Button size='sm' onClick={() => addItem(s.id, { name: '', issuer: '', date: '', description: { html: '', text: '' } })}><Plus className='w-4 h-4 mr-1' />Tambah Sertifikasi</Button>
+            <Button size='sm' onClick={() => addItem(s.id, { name: '', issuer: '', date: '', credentialUrl: '', description: { html: '', text: '' } })}><Plus className='w-4 h-4 mr-1' />Tambah Sertifikasi</Button>
           </CardHeader>
           <CardContent className='space-y-4'>
-            {(s.items || []).map((item: any) => (
+            {(s.items || []).map((item) => (
               <div key={item.id} className='border rounded p-3 space-y-2'>
                 <div className='grid grid-cols-2 gap-2'>
-                  <div><Label>Nama Sertifikasi</Label><Input value={item.name || ''} onChange={(e) => updateItem(s.id, item.id, 'name', e.target.value)} /></div>
-                  <div><Label>Penerbit</Label><Input value={item.issuer || ''} onChange={(e) => updateItem(s.id, item.id, 'issuer', e.target.value)} /></div>
+                  <div><Label>Nama Sertifikasi</Label><Input aria-label='Nama Sertifikasi' value={item.name || ''} onChange={(e) => updateItem(s.id, item.id, 'name', e.target.value)} /></div>
+                  <div><Label>Penerbit</Label><Input aria-label='Penerbit' value={item.issuer || ''} onChange={(e) => updateItem(s.id, item.id, 'issuer', e.target.value)} /></div>
                 </div>
-                <div><Label>Tanggal</Label><Input value={item.date || ''} onChange={(e) => updateItem(s.id, item.id, 'date', e.target.value)} /></div>
-                <Button size='sm' variant='destructive' onClick={() => removeItem(s.id, item.id)}><Trash2 className='w-4 h-4 mr-1' />Hapus</Button>
+                <div className='grid grid-cols-2 gap-2'>
+                  <div><Label>Tanggal</Label><Input aria-label='Tanggal' value={item.date || ''} onChange={(e) => updateItem(s.id, item.id, 'date', e.target.value)} /></div>
+                  <div><Label>Link Kredensial</Label><Input aria-label='Link Kredensial' value={item.credentialUrl || ''} onChange={(e) => updateItem(s.id, item.id, 'credentialUrl', e.target.value)} /></div>
+                </div>
+                <div><Label>Deskripsi (opsional)</Label><TiptapWrapper content={item.description?.html || ''} onChange={(html, text) => updateItem(s.id, item.id, 'description', { html, text })} label='Deskripsi sertifikasi' /></div>
+                <Button size='sm' variant='destructive' onClick={() => removeItem(s.id, item)}><Trash2 className='w-4 h-4 mr-1' />Hapus</Button>
               </div>
             ))}
-            {(s.items || []).length === 0 && <p className='text-sm text-gray-500'>Belum ada item</p>}
+            {(s.items || []).length === 0 && <p className='text-sm text-muted-foreground'>Belum ada item</p>}
           </CardContent>
         </Card>
       ))}
 
-      {doc.sections.filter(s=>s.visible && s.type==='languages').map((s) => (
+      {doc.sections.filter((s) => s.visible && s.type === 'languages').map((s) => (
         <Card key={s.id}>
           <CardHeader className='flex flex-row items-center justify-between'>
             <CardTitle>{s.title}</CardTitle>
             <Button size='sm' onClick={() => addItem(s.id, { name: '', level: '' })}><Plus className='w-4 h-4 mr-1' />Tambah Bahasa</Button>
           </CardHeader>
           <CardContent className='space-y-2'>
-            {(s.items || []).map((item: any) => (
+            {(s.items || []).map((item) => (
               <div key={item.id} className='flex gap-2 items-center'>
-                <Input placeholder='Bahasa' value={item.name || ''} onChange={(e) => updateItem(s.id, item.id, 'name', e.target.value)} />
-                <Input placeholder='Tingkat (ex: Native/Intermediate)' value={item.level || ''} onChange={(e) => updateItem(s.id, item.id, 'level', e.target.value)} />
-                <Button size='sm' variant='ghost' onClick={() => removeItem(s.id, item.id)}><Trash2 className='w-4 h-4' /></Button>
+                <Input aria-label='Bahasa' placeholder='Bahasa' value={item.name || ''} onChange={(e) => updateItem(s.id, item.id, 'name', e.target.value)} />
+                <Input aria-label='Tingkat bahasa' placeholder='Tingkat (ex: Native/Intermediate)' value={item.level || ''} onChange={(e) => updateItem(s.id, item.id, 'level', e.target.value)} />
+                <Button size='sm' variant='ghost' onClick={() => removeItem(s.id, item)} aria-label='Hapus bahasa'><Trash2 className='w-4 h-4' /></Button>
               </div>
             ))}
-            {(s.items || []).length === 0 && <p className='text-sm text-gray-500'>Belum ada item</p>}
+            {(s.items || []).length === 0 && <p className='text-sm text-muted-foreground'>Belum ada item</p>}
           </CardContent>
         </Card>
       ))}
 
-      {doc.sections.filter(s=>s.visible && s.type==='skills').map((s) => (
+      {doc.sections.filter((s) => s.visible && s.type === 'skills').map((s) => (
         <Card key={s.id}>
           <CardHeader className='flex flex-row items-center justify-between'>
             <CardTitle>{s.title}</CardTitle>
           </CardHeader>
           <CardContent className='space-y-2'>
-            <TiptapWrapper content={(s.items?.[0] as any)?.description?.html || ''} onChange={(html, text) => {
-              if (!s.items || s.items.length === 0) {
+            <TiptapWrapper content={s.items?.[0]?.description?.html || ''} onChange={(html, text) => {
+              const first = s.items?.[0];
+              if (!first) {
                 addItem(s.id, { description: { html, text } });
               } else {
-                updateItem(s.id, (s.items[0] as any).id, 'description', { html, text });
+                updateItem(s.id, first.id, 'description', { html, text });
               }
-            }} />
-            <p className='text-xs text-gray-500'>Isi keahlian kamu (bisa pakai bullet list)</p>
+            }} label='Keahlian' />
+            <p className='text-xs text-muted-foreground'>Isi keahlian kamu (bisa pakai bullet list)</p>
           </CardContent>
         </Card>
       ))}
