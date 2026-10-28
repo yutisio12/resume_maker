@@ -44,6 +44,14 @@ export const clearDraft = async () => {
   await db.delete('drafts', 'current');
 };
 
+export const clearAllData = async () => {
+  const db = await getDB();
+  await Promise.all([
+    db.clear('drafts'),
+    db.clear('photos'),
+  ]);
+};
+
 export const savePhoto = async (id: string, blob: Blob) => {
   const db = await getDB();
   await db.put('photos', blob, id);
