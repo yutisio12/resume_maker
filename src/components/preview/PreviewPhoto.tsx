@@ -4,30 +4,38 @@ import { useResume } from '@/store/resume-context';
 import { useState, useEffect } from 'react';
 import { loadPhoto } from '@/lib/storage/db';
 
-export default function PreviewPhoto() {
+interface Props {
+  photoId?: string | null;
+  showPhoto?: boolean;
+}
+
+export default function PreviewPhoto({ photoId, showPhoto }: Props) {
   const { state } = useResume();
-  const doc = state.document;
+  const activePhotoId = photoId === undefined ? state.document.personalInfo.photoId : photoId;
+  const activeShowPhoto = showPhoto === undefined ? state.document.personalInfo.showPhoto : showPhoto;
   const [src, setSrc] = useState<string | null>(null);
 
   useEffect(() => {
     let objectUrl: string | null = null;
     (async () => {
-      if (doc.personalInfo.photoId && doc.personalInfo.showPhoto) {
-        const blob = await loadPhoto(doc.personalInfo.photoId);
-        if (blob) {
-          objectUrl = URL.createObjectURL(blob);
-          setSrc(objectUrl);
-        } else {
-          setSrc(null);
+      if (activePhotoId && activeShowPhoto) {
+        try {
+          const blob = await loadPhoto(activePhotoId);
+          if (blob) {
+            objectUrl = URL.createObjectURL(blob);
+            setSrc(objectUrl);
+            return;
+          }
+        } catch {
+          // Photo is unavailable; render without it.
         }
-      } else {
-        setSrc(null);
       }
+      setSrc(null);
     })();
     return () => {
       if (objectUrl) URL.revokeObjectURL(objectUrl);
     };
-  }, [doc.personalInfo.photoId, doc.personalInfo.showPhoto]);
+  }, [activePhotoId, activeShowPhoto]);
 
   if (!src) return null;
   return <img src={src} alt='foto' className='w-24 h-24 object-cover rounded' />;
