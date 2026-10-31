@@ -1,9 +1,11 @@
 ﻿'use client';
 
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useRef } from 'react';
 import { ResumeDocument } from '@/lib/models/types';
 import { createDefaultResume } from '@/lib/constants/defaults';
 import { loadDraft, saveDraft } from '@/lib/storage/db';
+
+export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
 type Action =
   | { type: 'SET_DOCUMENT'; payload: ResumeDocument }
@@ -14,11 +16,15 @@ type Action =
   | { type: 'REMOVE_SECTION'; payload: string }
   | { type: 'REORDER_SECTIONS'; payload: ResumeDocument['sections'] }
   | { type: 'UPDATE_SECTION'; payload: { id: string; data: Partial<ResumeDocument['sections'][0]> } }
+  | { type: 'SET_LOADING'; payload: boolean }
+  | { type: 'SET_SAVE_STATUS'; payload: { status: SaveStatus; error?: string | null } }
   | { type: 'RESET'; payload: ResumeDocument };
 
 interface ResumeState {
   document: ResumeDocument;
   isLoading: boolean;
+  saveStatus: SaveStatus;
+  saveError: string | null;
 }
 
 const ResumeContext = createContext<{
@@ -44,6 +50,10 @@ function reducer(state: ResumeState, action: Action): ResumeState {
       return { ...state, document: { ...state.document, sections: action.payload, metadata: { ...state.document.metadata, updatedAt: new Date().toISOString() } } };
     case 'UPDATE_SECTION':
       return { ...state, document: { ...state.document, sections: state.document.sections.map(s => s.id === action.payload.id ? { ...s, ...action.payload.data } : s), metadata: { ...state.document.metadata, updatedAt: new Date().toISOString() } } };
+    case 'SET_LOADING':
+      return { ...state, isLoading: action.payload };
+    case 'SET_SAVE_STATUS':
+      return { ...state, saveStatus: action.payload.status, saveError: action.payload.error ?? null };
     case 'RESET':
       return { ...state, document: action.payload };
     default:
@@ -55,29 +65,87 @@ export function ResumeProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(reducer, {
     document: createDefaultResume(),
     isLoading: true,
+    saveStatus: 'idle',
+    saveError: null,
   });
+  const loadedRef = useRef(false);
+  const dirtyRef = useRef(false);
 
   useEffect(() => {
+    let cancelled = false;
+
     (async () => {
       try {
         const saved = await loadDraft();
-        if (saved) {
+        if (!cancelled && saved) {
           dispatch({ type: 'SET_DOCUMENT', payload: saved as ResumeDocument });
         }
       } catch {
-        // ignore
+        if (!cancelled) {
+          dispatch({
+            type: 'SET_SAVE_STATUS',
+            payload: {
+              status: 'error',
+              error: 'Draft tidak dapat dimuat dari perangkat ini.',
+            },
+          });
+        }
       } finally {
-        // keep loading false after attempt
+        if (!cancelled) {
+          loadedRef.current = true;
+          dispatch({ type: 'SET_LOADING', payload: false });
+        }
       }
     })();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
-    const t = setTimeout(() => {
-      saveDraft(state.document).catch(() => {});
+    if (!loadedRef.current || state.isLoading) return;
+
+    dirtyRef.current = true;
+    let cancelled = false;
+    dispatch({ type: 'SET_SAVE_STATUS', payload: { status: 'saving', error: null } });
+
+    const timer = setTimeout(async () => {
+      try {
+        await saveDraft(state.document);
+        if (!cancelled) {
+          dirtyRef.current = false;
+          dispatch({ type: 'SET_SAVE_STATUS', payload: { status: 'saved', error: null } });
+        }
+      } catch {
+        if (!cancelled) {
+          dispatch({
+            type: 'SET_SAVE_STATUS',
+            payload: {
+              status: 'error',
+              error: 'Gagal menyimpan ke perangkat ini. Periksa ruang penyimpanan browser.',
+            },
+          });
+        }
+      }
     }, 800);
-    return () => clearTimeout(t);
-  }, [state.document]);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [state.document, state.isLoading]);
+
+  useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (!dirtyRef.current) return;
+      event.preventDefault();
+      event.returnValue = '';
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, []);
 
   return (
     <ResumeContext.Provider value={{ state, dispatch }}>

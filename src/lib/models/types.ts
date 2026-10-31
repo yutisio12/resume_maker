@@ -83,10 +83,14 @@ export interface SectionItem {
   description?: RichTextContent;
   school?: string;
   degree?: string;
+  grade?: string;
+  notes?: RichTextContent;
   name?: string;
   url?: string;
+  period?: string;
   issuer?: string;
   date?: string;
+  credentialUrl?: string;
   level?: string;
 }
 

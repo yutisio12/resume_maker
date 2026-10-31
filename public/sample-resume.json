@@ -1,0 +1,150 @@
+{
+  "schemaVersion": 1,
+  "id": "11111111-1111-4111-8111-111111111111",
+  "metadata": {
+    "createdAt": "2026-10-25T00:00:00.000Z",
+    "updatedAt": "2026-10-25T00:00:00.000Z"
+  },
+  "personalInfo": {
+    "fullName": "Nama Contoh",
+    "headline": "Frontend Developer",
+    "location": "Jakarta, Indonesia",
+    "phone": "0812-0000-0000",
+    "email": "nama.contoh@example.com",
+    "linkedin": "https://www.linkedin.com/in/contoh",
+    "github": "https://github.com/contoh",
+    "website": "https://example.com",
+    "photoId": null,
+    "showPhoto": false
+  },
+  "summary": {
+    "html": "<p>Frontend developer dengan pengalaman membangun aplikasi web yang aksesibel dan mudah digunakan. Terbiasa bekerja dengan React, TypeScript, dan desain sistem.</p>",
+    "text": "Frontend developer dengan pengalaman membangun aplikasi web yang aksesibel dan mudah digunakan. Terbiasa bekerja dengan React, TypeScript, dan desain sistem."
+  },
+  "sections": [
+    {
+      "id": "22222222-2222-4222-8222-222222222222",
+      "type": "experience",
+      "title": "Pengalaman Kerja",
+      "visible": true,
+      "order": 0,
+      "items": [
+        {
+          "id": "22222222-2222-4222-8222-222222222223",
+          "position": "Frontend Developer",
+          "company": "Contoh Teknologi",
+          "location": "Jakarta",
+          "startDate": "Jan 2023",
+          "endDate": "",
+          "current": true,
+          "description": {
+            "html": "<ul><li>Mengembangkan antarmuka aplikasi dengan React dan TypeScript.</li><li>Berkolaborasi dengan tim desain untuk menjaga konsistensi komponen.</li></ul>",
+            "text": "Mengembangkan antarmuka aplikasi dengan React dan TypeScript. Berkolaborasi dengan tim desain untuk menjaga konsistensi komponen."
+          }
+        }
+      ]
+    },
+    {
+      "id": "33333333-3333-4333-8333-333333333333",
+      "type": "education",
+      "title": "Pendidikan",
+      "visible": true,
+      "order": 1,
+      "items": [
+        {
+          "id": "33333333-3333-4333-8333-333333333334",
+          "school": "Universitas Contoh",
+          "degree": "S1 Teknik Informatika",
+          "location": "Bandung",
+          "grade": "3.75/4.00",
+          "startDate": "2018",
+          "endDate": "2022",
+          "current": false,
+          "description": {
+            "html": "<p>Aktif dalam kegiatan organisasi dan pengembangan aplikasi kampus.</p>",
+            "text": "Aktif dalam kegiatan organisasi dan pengembangan aplikasi kampus."
+          }
+        }
+      ]
+    },
+    {
+      "id": "44444444-4444-4444-8444-444444444444",
+      "type": "skills",
+      "title": "Keahlian",
+      "visible": true,
+      "order": 2,
+      "items": [
+        {
+          "id": "44444444-4444-4444-8444-444444444445",
+          "description": {
+            "html": "<ul><li>JavaScript, TypeScript, React, Next.js</li><li>HTML, CSS, Tailwind CSS</li><li>Git, pengujian unit, aksesibilitas web</li></ul>",
+            "text": "JavaScript, TypeScript, React, Next.js. HTML, CSS, Tailwind CSS. Git, pengujian unit, aksesibilitas web."
+          }
+        }
+      ]
+    },
+    {
+      "id": "55555555-5555-4555-8555-555555555555",
+      "type": "projects",
+      "title": "Proyek",
+      "visible": true,
+      "order": 3,
+      "items": [
+        {
+          "id": "55555555-5555-4555-8555-555555555556",
+          "name": "Aplikasi Pencatat Kegiatan",
+          "url": "https://example.com/proyek",
+          "period": "2024",
+          "description": {
+            "html": "<p>Aplikasi web untuk mencatat kegiatan harian dengan penyimpanan lokal.</p>",
+            "text": "Aplikasi web untuk mencatat kegiatan harian dengan penyimpanan lokal."
+          }
+        }
+      ]
+    },
+    {
+      "id": "66666666-6666-4666-8666-666666666666",
+      "type": "certifications",
+      "title": "Sertifikasi",
+      "visible": true,
+      "order": 4,
+      "items": [
+        {
+          "id": "66666666-6666-4666-8666-666666666667",
+          "name": "Contoh Sertifikasi Web",
+          "issuer": "Lembaga Contoh",
+          "date": "2024",
+          "credentialUrl": "https://example.com/sertifikat",
+          "description": {
+            "html": "<p>Sertifikasi contoh untuk demonstrasi format.</p>",
+            "text": "Sertifikasi contoh untuk demonstrasi format."
+          }
+        }
+      ]
+    },
+    {
+      "id": "77777777-7777-4777-8777-777777777777",
+      "type": "languages",
+      "title": "Bahasa",
+      "visible": true,
+      "order": 5,
+      "items": [
+        {
+          "id": "77777777-7777-4777-8777-777777777778",
+          "name": "Bahasa Indonesia",
+          "level": "Native"
+        },
+        {
+          "id": "77777777-7777-4777-8777-777777777779",
+          "name": "English",
+          "level": "Intermediate"
+        }
+      ]
+    }
+  ],
+  "settings": {
+    "template": "ats-classic",
+    "showPhoto": false,
+    "fontFamily": "Arial"
+  }
+}

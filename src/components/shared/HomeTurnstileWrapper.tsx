@@ -54,11 +54,11 @@ export default function HomeTurnstileWrapper({ children }: Props) {
           <CardTitle>Verifikasi Keamanan</CardTitle>
         </CardHeader>
         <CardContent className='space-y-4'>
-          <p className='text-sm text-gray-600'>Untuk melindungi aplikasi dari spam, silakan selesaikan verifikasi Cloudflare Turnstile.</p>
+          <p className='text-sm text-muted-foreground'>Untuk melindungi aplikasi dari spam, silakan selesaikan verifikasi Cloudflare Turnstile.</p>
           {siteKey && !disabled ? (
             <TurnstileWidget siteKey={siteKey} onVerify={onVerify} />
           ) : (
-            <div className='text-sm text-amber-600'>Turnstile belum dikonfigurasi. Set NEXT_PUBLIC_TURNSTILE_SITE_KEY atau aktifkan NEXT_PUBLIC_TURNSTILE_DISABLED=true untuk dev.</div>
+            <div className='text-sm text-amber-400'>Turnstile belum dikonfigurasi. Set NEXT_PUBLIC_TURNSTILE_SITE_KEY atau aktifkan NEXT_PUBLIC_TURNSTILE_DISABLED=true untuk dev.</div>
           )}
           {loading && <p className='text-sm text-center'>Memverifikasi...</p>}
         </CardContent>

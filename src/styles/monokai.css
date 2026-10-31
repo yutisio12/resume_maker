@@ -174,9 +174,20 @@ input[type='radio'] {
 }
 
 .monokai-editor .toolbar button.is-active,
-.monokai-editor .toolbar button[data-active='true'] {
+.monokai-editor .toolbar button[data-active='true'],
+.monokai-editor .toolbar button[aria-pressed='true'] {
   background: var(--monokai-green);
   color: var(--monokai-bg);
+}
+
+.monokai-editor .toolbar button:focus-visible {
+  outline: 2px solid var(--monokai-cyan);
+  outline-offset: 1px;
+}
+
+.monokai-editor .toolbar button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 .monokai-editor .ProseMirror {
@@ -274,4 +285,29 @@ input[type='radio'] {
   float: left;
   height: 0;
   pointer-events: none;
+}
+
+/* Resume preview watermark */
+.resume-watermark {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-rows: 1fr;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+}
+
+.resume-watermark span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(39, 40, 34, 0.11);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+  transform: rotate(-28deg);
 }
