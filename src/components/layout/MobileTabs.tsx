@@ -5,6 +5,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import ResumePreview from '@/components/preview/ResumePreview';
+import TiptapWrapper from '@/components/editor/TiptapWrapper';
+import PhotoUpload from '@/components/form/PhotoUpload';
+import FormSections from '@/components/form/FormSections';
+import ResumeSettings from '@/components/form/ResumeSettings';
 
 export default function MobileTabs() {
   const { state, dispatch } = useResume();
@@ -22,19 +27,37 @@ export default function MobileTabs() {
           <TabsTrigger value='preview'>Preview</TabsTrigger>
         </TabsList>
         <TabsContent value='form' className='space-y-4'>
+          <ResumeSettings />
+
           <Card>
             <CardHeader><CardTitle>Informasi Pribadi</CardTitle></CardHeader>
             <CardContent className='space-y-3'>
-              <div><Label>Nama Lengkap</Label><Input value={doc.personalInfo.fullName} onChange={(e) => updatePersonal('fullName', e.target.value)} /></div>
-              <div><Label>Headline</Label><Input value={doc.personalInfo.headline} onChange={(e) => updatePersonal('headline', e.target.value)} /></div>
-              <div><Label>Email</Label><Input value={doc.personalInfo.email} onChange={(e) => updatePersonal('email', e.target.value)} /></div>
-              <div><Label>Telepon</Label><Input value={doc.personalInfo.phone} onChange={(e) => updatePersonal('phone', e.target.value)} /></div>
+              <div><Label>Nama Lengkap</Label><Input aria-label='Nama Lengkap' value={doc.personalInfo.fullName} onChange={(e) => updatePersonal('fullName', e.target.value)} /></div>
+              <div><Label>Headline</Label><Input aria-label='Headline' value={doc.personalInfo.headline} onChange={(e) => updatePersonal('headline', e.target.value)} /></div>
+              <div><Label>Email</Label><Input aria-label='Email' value={doc.personalInfo.email} onChange={(e) => updatePersonal('email', e.target.value)} /></div>
+              <div><Label>Telepon</Label><Input aria-label='Telepon' value={doc.personalInfo.phone} onChange={(e) => updatePersonal('phone', e.target.value)} /></div>
+              <div><Label>Lokasi</Label><Input aria-label='Lokasi' value={doc.personalInfo.location} onChange={(e) => updatePersonal('location', e.target.value)} /></div>
+              <div><Label>LinkedIn</Label><Input aria-label='LinkedIn' value={doc.personalInfo.linkedin} onChange={(e) => updatePersonal('linkedin', e.target.value)} /></div>
+              <div><Label>GitHub</Label><Input aria-label='GitHub' value={doc.personalInfo.github} onChange={(e) => updatePersonal('github', e.target.value)} /></div>
+              <div><Label>Website</Label><Input aria-label='Website' value={doc.personalInfo.website} onChange={(e) => updatePersonal('website', e.target.value)} /></div>
             </CardContent>
           </Card>
+
+          <PhotoUpload />
+
+          <Card>
+            <CardHeader><CardTitle>Ringkasan Profesional</CardTitle></CardHeader>
+            <CardContent>
+              <TiptapWrapper content={doc.summary.html} onChange={(html, text) => dispatch({ type: 'UPDATE_SUMMARY', payload: { html, text } })} label='Ringkasan Profesional' />
+            </CardContent>
+          </Card>
+
+          <FormSections />
         </TabsContent>
         <TabsContent value='preview'>
           <div className='overflow-x-auto'>
-            <div id='resume-preview' className='bg-white shadow' style={{ width: '210mm', minHeight: '297mm', transform: 'scale(0.5)', transformOrigin: 'top left' }}>
+            <div style={{ transform: 'scale(1)', transformOrigin: 'top left' }}>
+              <ResumePreview id='resume-preview-mobile' />
             </div>
           </div>
         </TabsContent>
