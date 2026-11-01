@@ -22,7 +22,7 @@ Resume Maker adalah aplikasi web untuk membuat CV/resume profesional yang ramah 
 | Template | Dua template: **ATS Classic** (default) dan **Minimal** |
 | Export PDF | Opsi **B**: browser print dialog (`window.print()`), bukan jsPDF/html2canvas |
 | Watermark preview | Terlihat samar, berulang, teks `Create by github.com/yutisio12` |
-| Watermark PDF | Teks putih tersembunyi di layer teks PDF, berisi brand + ID dokumen + timestamp |
+| Watermark PDF | Teks putih tersembunyi di layer teks PDF, hanya berisi ID dokumen (`doc:<id>`) |
 | Import | Modal preview dokumen + sample JSON sebelum draft diganti |
 | Verifikasi | Cloudflare Turnstile mengunci Import/Export JSON/Export PDF |
 | Bahasa UI | Bahasa Indonesia |
@@ -363,6 +363,8 @@ Sample import:
 - Pengguna memilih “Save as PDF” di dialog browser.
 - `print.css` hanya menampilkan CV, bukan form/header/tab/tombol.
 - Ukuran A4, margin wajar, warna aman cetak.
+- Margin memakai `@page` (10mm) dan padding sheet dihapus saat print, sehingga halaman kedua dan seterusnya memiliki margin yang sama dengan halaman pertama.
+- `color-scheme: light` dipaksa saat print agar area margin tidak diwarnai gelap oleh tema Monokai.
 - Heading tidak terpisah dari isi; item pengalaman/pendidikan tidak terpotong.
 - Print dari mobile harus tetap mencetak preview desktop yang benar.
 - UI harus menjelaskan bahwa hasil akhir dapat berbeda tergantung browser/printer.
@@ -381,8 +383,9 @@ Sample import:
 **PDF hasil print:**
 
 - Watermark preview disembunyikan di print.
-- Watermark print berupa teks putih 1px, `position: fixed`, berisi:
-  `Create by github.com/yutisio12 | doc:<id> | <timestamp>`
+- Watermark print berupa teks putih 1px, `position: fixed`, hanya berisi ID dokumen:
+  `doc:<id>`
+- Brand, alamat website, dan timestamp tidak disertakan di PDF.
 - Tidak terlihat secara visual di kertas/PDF.
 - Tetap ada di layer teks PDF dan dapat diidentifikasi lewat ekstraksi teks.
 - Tidak disertakan pada preview import agar preview tetap bersih.
@@ -544,12 +547,12 @@ Status: **diimplementasikan dan diverifikasi**. Print desktop/mobile diuji denga
 ### P1.1 Watermark
 
 - [x] Buat `src/lib/watermark.ts`:
-  - teks brand;
-  - helper metadata dokumen (`id`, timestamp).
+  - teks brand untuk preview;
+  - helper ID dokumen untuk penanda PDF.
 - [x] Buat `ResumeWatermark` untuk preview.
 - [x] Style watermark di `monokai.css` (screen) dan `print.css` (print).
 - [x] Watermark preview selalu tampil, tanpa toggle.
-- [x] Watermark print tersembunyi secara visual, berisi brand + ID + timestamp.
+- [x] Watermark print tersembunyi secara visual, hanya berisi ID dokumen.
 - [x] Pastikan watermark tidak memuat data pribadi.
 - [x] Tambahkan catatan batasan watermark di README.
 
@@ -640,7 +643,7 @@ Status verifikasi saat dokumen ini diperbarui:
 - `npm run test:e2e` lulus: 3 test Playwright (form/preview/watermark, import sample, mode print).
 - `npm run lint` lulus.
 - Export PDF memakai `window.print()`; `html2canvas` dan `jsPDF` sudah dihapus.
-- Print desktop dan mobile diuji dengan Chrome headless; PDF hanya berisi CV dan watermark teks dapat diekstrak.
+- Print desktop dan mobile diuji dengan Chrome headless; PDF hanya berisi CV dan penanda `doc:<id>` yang dapat diekstrak. PDF multi-halaman memakai margin `@page` 10mm yang konsisten di setiap halaman.
 - Import valid/invalid, batal import, penerapan sample, upload/persistensi foto, switch template, reset, watermark, dan print CV terisi sudah diuji dengan Playwright + Chrome headless tanpa console error.
 - Turnstile diuji dengan test key resmi Cloudflare dan endpoint siteverify nyata: widget lolos, /verify-turnstile mengembalikan success: true, aplikasi terbuka, dan tidak ada error console. Site key/secret produksi tetap perlu smoke test setelah deploy.
 - Simulasi IndexedDB gagal/penuh diuji dengan memaksa IDBObjectStore.put melempar QuotaExceededError: status gagal tampil dan pulih setelah penyimpanan normal.
@@ -662,8 +665,10 @@ Status verifikasi saat dokumen ini diperbarui:
 - [x] Preview watermark terlihat (Playwright).
 - [x] Print desktop: hanya CV yang tercetak (Chrome headless).
 - [x] Print mobile: hanya CV yang tercetak (Chrome headless).
-- [x] PDF hasil print: watermark tidak terlihat, tetapi teks watermark dapat diekstrak (pypdf).
+- [x] PDF hasil print: penanda tidak terlihat, tetapi `doc:<id>` dapat diekstrak (pypdf).
 - [x] PDF CV terisi: satu halaman, hanya konten CV, tanpa UI aplikasi (Playwright + pypdf).
+- [x] CV multi-halaman: margin kiri/atas halaman 2 dan 3 sama dengan halaman 1 (PDF Chrome headless, dicek dengan PyMuPDF).
+- [x] Area margin PDF putih bersih, tanpa dark canvas dari tema Monokai (dicek piksel PDF).
 - [x] Tidak ada request data CV keluar selain token Turnstile (audit request Playwright: hanya asset lokal dan script Turnstile).
 - [x] Tab order, focus ring, dan label (Playwright: 24 elemen berurutan, outline 2px, label/aria-label tersedia); uji screen reader manual belum dilakukan.
 

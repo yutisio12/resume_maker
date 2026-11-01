@@ -80,13 +80,13 @@ Create by github.com/yutisio12
 Tujuannya agar screenshot preview tidak bersih. Watermark tidak memiliki tombol hapus di aplikasi.
 
 ### PDF
-Saat mencetak/menyimpan PDF, preview watermark disembunyikan dan diganti watermark teks putih tersembunyi di layer teks PDF:
+Saat mencetak/menyimpan PDF, preview watermark disembunyikan dan diganti penanda dokumen tersembunyi di layer teks PDF:
 
 ```
-Create by github.com/yutisio12 | doc:<id> | <timestamp>
+doc:<id>
 ```
 
-Watermark ini tidak terlihat secara visual, tetapi dapat diidentifikasi melalui ekstraksi teks PDF.
+Nama aplikasi, alamat website, dan timestamp tidak disertakan di PDF. Penanda ini tidak terlihat secara visual, tetapi dapat diidentifikasi melalui ekstraksi teks PDF.
 
 ### Batasan penting
 
@@ -256,7 +256,9 @@ Status verifikasi saat ini:
 - `npm run test:e2e` lulus: 3 test Playwright.
 - `npm run lint` dapat dijalankan terpisah dan lulus.
 - Export PDF memakai dialog print browser, bukan `html2canvas`/`jsPDF`.
-- Print desktop/mobile diuji dengan Chrome headless: hanya CV yang tercetak dan watermark teks PDF dapat diekstrak.
+- Print desktop/mobile diuji dengan Chrome headless: hanya CV yang tercetak dan penanda `doc:<id>` dapat diekstrak.
+- CV multi-halaman memakai margin `@page` 10mm, jadi halaman 2 dan seterusnya memiliki margin yang sama dengan halaman 1.
+- Area margin PDF dipaksa putih (`color-scheme: light`) agar tidak muncul blok gelap dari tema Monokai.
 
 ---
 
@@ -366,8 +368,10 @@ Detail lengkap ada di [PLAN.md](./PLAN.md).
 
 Dibuat oleh [github.com/yutisio12](https://github.com/yutisio12).
 
-Watermark pada preview dan PDF menggunakan teks:
+Watermark pada preview menggunakan teks:
 
 ```
 Create by github.com/yutisio12
 ```
+
+PDF tidak menyertakan brand, alamat website, atau timestamp; layer teks PDF hanya berisi `doc:<id>`.
