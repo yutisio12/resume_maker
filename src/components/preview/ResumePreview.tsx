@@ -189,7 +189,7 @@ export default function ResumePreview({ id = 'resume-preview', document, showWat
         fontFamily: doc.settings?.fontFamily || 'Arial, Helvetica, sans-serif',
       }}
     >
-      <div className={`relative z-10 p-10 space-y-4 ${isMinimal ? 'resume-template-minimal' : 'resume-template-ats'}`}>
+      <div className={`resume-sheet-content relative z-10 p-10 space-y-4 ${isMinimal ? 'resume-template-minimal' : 'resume-template-ats'}`}>
         <div className={isMinimal ? 'border-l-4 border-black pl-4 pb-3' : 'pb-3 border-b border-black'}>
           <div className='flex gap-4 items-start'>
             <PreviewPhoto photoId={doc.personalInfo.photoId} showPhoto={showPhoto} />

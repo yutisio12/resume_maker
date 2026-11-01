@@ -27,6 +27,7 @@ export default defineConfig({
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
     env: {
+      NEXT_DIST_DIR: '.next-e2e',
       NEXT_PUBLIC_TURNSTILE_DISABLED: 'true',
     },
   },

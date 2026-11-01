@@ -1,19 +1,13 @@
 import { describe, it, expect } from 'vitest'
-import { WATERMARK_BRAND, getWatermarkFingerprint } from '@/lib/watermark'
+import { getWatermarkFingerprint } from '@/lib/watermark'
 
 describe('watermark', () => {
-  it('contains the brand and document identity without personal data', () => {
-    const fingerprint = getWatermarkFingerprint({
-      id: 'doc-123',
-      metadata: {
-        createdAt: '2026-01-02T03:04:05.000Z',
-        updatedAt: '2026-01-03T03:04:05.000Z',
-      },
-    })
+  it('contains only the document id without brand, website, or timestamp', () => {
+    const fingerprint = getWatermarkFingerprint({ id: 'doc-123' })
 
-    expect(fingerprint).toContain(WATERMARK_BRAND)
-    expect(fingerprint).toContain('doc-123')
-    expect(fingerprint).toContain('2026-01-02T03:04:05.000Z')
-    expect(fingerprint).not.toContain('Nama')
+    expect(fingerprint).toBe('doc:doc-123')
+    expect(fingerprint).not.toContain('Create')
+    expect(fingerprint).not.toContain('github.com')
+    expect(fingerprint).not.toContain('2026')
   })
 })
