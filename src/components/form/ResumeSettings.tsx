@@ -40,7 +40,7 @@ export default function ResumeSettings() {
             </select>
           </div>
         </div>
-        <p className='text-xs text-muted-foreground'>ATS Classic menyembunyikan foto dan memakai tata letak satu kolom. Minimal menampilkan foto jika diaktifkan.</p>
+        <p className='text-xs text-muted-foreground'>ATS Classic menyembunyikan foto dan memakai tata letak satu kolom. Menampilkan foto jika diaktifkan.</p>
       </CardContent>
     </Card>
   );
