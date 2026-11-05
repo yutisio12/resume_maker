@@ -151,7 +151,7 @@ export default function FormSections() {
                   <div><Label>Selesai</Label><Input aria-label='Selesai' value={item.endDate || ''} onChange={(e) => updateItem(s.id, item.id, 'endDate', e.target.value)} disabled={item.current} /></div>
                 </div>
                 <label className='flex items-center gap-2 text-sm'><input type='checkbox' checked={!!item.current} onChange={(e) => updateItem(s.id, item.id, 'current', e.target.checked)} /> Masih bekerja di sini</label>
-                <div><Label>Deskripsi & Pencapaian</Label><TiptapWrapper content={item.description?.html || ''} onChange={(html, text) => updateItem(s.id, item.id, 'description', { html, text })} label='Deskripsi dan pencapaian pengalaman' /></div>
+                <div><Label>Deskripsi Kerja & Pencapaian</Label><TiptapWrapper content={item.description?.html || ''} onChange={(html, text) => updateItem(s.id, item.id, 'description', { html, text })} label='Deskripsi dan pencapaian pengalaman' /></div>
                 <Button size='sm' variant='destructive' onClick={() => removeItem(s.id, item)}><Trash2 className='w-4 h-4 mr-1' />Hapus</Button>
               </div>
             ))}
