@@ -1,9 +1,12 @@
 ﻿'use client';
 
 import React, { createContext, useContext, useReducer, useEffect, useRef } from 'react';
+import { toast } from 'sonner';
 import { ResumeDocument } from '@/lib/models/types';
 import { createDefaultResume } from '@/lib/constants/defaults';
 import { loadDraft, saveDraft } from '@/lib/storage/db';
+import { resumeDocumentSchema } from '@/lib/models/schema';
+import { toResumeDocument } from '@/lib/utils/import';
 
 export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
@@ -70,6 +73,11 @@ export function ResumeProvider({ children }: { children: React.ReactNode }) {
   });
   const loadedRef = useRef(false);
   const dirtyRef = useRef(false);
+  // Set when the stored draft exists but fails validation. Until the user
+  // edits something we keep the stored bytes untouched instead of letting the
+  // autosave effect overwrite them with an empty document.
+  const preservedRef = useRef(false);
+  const initialDocumentRef = useRef(state.document);
 
   useEffect(() => {
     let cancelled = false;
@@ -77,8 +85,17 @@ export function ResumeProvider({ children }: { children: React.ReactNode }) {
     (async () => {
       try {
         const saved = await loadDraft();
-        if (!cancelled && saved) {
-          dispatch({ type: 'SET_DOCUMENT', payload: saved as ResumeDocument });
+        if (!cancelled && saved !== undefined && saved !== null) {
+          const parsed = resumeDocumentSchema.safeParse(saved);
+          if (parsed.success) {
+            dispatch({
+              type: 'SET_DOCUMENT',
+              payload: toResumeDocument(parsed.data, { keepPhoto: true }),
+            });
+          } else {
+            preservedRef.current = true;
+            toast.error('Draft lama tidak dapat dibaca. Data di perangkat tidak diubah sampai kamu mulai mengedit.');
+          }
         }
       } catch {
         if (!cancelled) {
@@ -105,6 +122,7 @@ export function ResumeProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!loadedRef.current || state.isLoading) return;
+    if (preservedRef.current && state.document === initialDocumentRef.current) return;
 
     dirtyRef.current = true;
     let cancelled = false;
