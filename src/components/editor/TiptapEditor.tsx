@@ -55,7 +55,7 @@ function ToolbarButton({
   );
 }
 
-export default function TiptapEditor({ content, onChange, singleLine = false, label = 'Isi teks' }: TiptapEditorProps) {
+export default function TiptapEditor({ content, onChange, singleLine = false, label = 'Isi Teks' }: TiptapEditorProps) {
   const editor = useEditor({
     extensions: [
       StarterKit,
