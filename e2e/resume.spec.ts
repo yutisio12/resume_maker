@@ -38,4 +38,38 @@ test.describe('Resume Maker', () => {
     await expect(page.locator('#resume-preview-print')).toBeVisible()
     await expect(page.getByLabel('Import JSON')).toBeHidden()
   })
+
+  test('draft tersimpan yang rusak tidak membuat aplikasi crash', async ({ page }) => {
+    await page.goto('/')
+    // Let the initial autosave finish before replacing the stored draft.
+    await page.waitForTimeout(1500)
+
+    await page.evaluate(async () => {
+      const db = await new Promise<IDBDatabase>((resolve, reject) => {
+        const request = indexedDB.open('resume-maker-db', 1)
+        request.onupgradeneeded = () => {
+          const opened = request.result
+          if (!opened.objectStoreNames.contains('drafts')) opened.createObjectStore('drafts')
+          if (!opened.objectStoreNames.contains('photos')) opened.createObjectStore('photos')
+        }
+        request.onsuccess = () => resolve(request.result)
+        request.onerror = () => reject(request.error)
+      })
+
+      await new Promise<void>((resolve, reject) => {
+        const tx = db.transaction('drafts', 'readwrite')
+        tx.objectStore('drafts').put({ schemaVersion: 1, id: 'rusak', sections: 'bukan array' }, 'current')
+        tx.oncomplete = () => resolve()
+        tx.onerror = () => reject(tx.error)
+      })
+
+      db.close()
+    })
+
+    await page.reload()
+
+    await expect(page.locator('.form-panel').getByLabel('Nama Lengkap')).toBeVisible()
+    await expect(page.locator('#resume-preview')).toBeVisible()
+    await expect(page.getByText('Draft lama tidak dapat dibaca')).toBeVisible()
+  })
 })
