@@ -1,7 +1,13 @@
 import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { createDefaultResume } from '@/lib/constants/defaults'
-import { parseResumeJson } from '@/lib/utils/import'
+import { parseResumeJson, toResumeDocument } from '@/lib/utils/import'
+import {
+  MAX_ITEMS_PER_SECTION,
+  MAX_SECTIONS,
+  MAX_TEXT_LENGTH,
+  resumeDocumentSchema,
+} from '@/lib/models/schema'
 
 describe('parseResumeJson', () => {
   it('accepts the public sample document', () => {
@@ -80,5 +86,64 @@ describe('parseResumeJson', () => {
     if (!result.ok) return
     expect(result.document.settings.template).toBe('ats-classic')
     expect(result.document.settings.fontFamily).toBe('Arial')
+  })
+
+  it('rejects too many sections', () => {
+    const doc = createDefaultResume()
+    const base = doc.sections[0]
+    doc.sections = Array.from({ length: MAX_SECTIONS + 1 }, (_, index) => ({
+      ...base,
+      id: `section-${index}`,
+    }))
+
+    expect(parseResumeJson(JSON.stringify(doc)).ok).toBe(false)
+  })
+
+  it('rejects too many items in one section', () => {
+    const doc = createDefaultResume()
+    doc.sections = [{
+      id: 'section-1',
+      type: 'experience',
+      title: 'Pengalaman',
+      visible: true,
+      order: 0,
+      items: Array.from({ length: MAX_ITEMS_PER_SECTION + 1 }, (_, index) => ({
+        id: `item-${index}`,
+        position: 'Developer',
+      })),
+    }]
+
+    expect(parseResumeJson(JSON.stringify(doc)).ok).toBe(false)
+  })
+
+  it('rejects an oversized text field', () => {
+    const doc = createDefaultResume()
+    doc.personalInfo.fullName = 'a'.repeat(MAX_TEXT_LENGTH + 1)
+
+    expect(parseResumeJson(JSON.stringify(doc)).ok).toBe(false)
+  })
+
+  it('rejects a stored draft with a malformed shape', () => {
+    const doc = { ...createDefaultResume(), sections: 'bukan array' }
+
+    expect(resumeDocumentSchema.safeParse(doc).success).toBe(false)
+  })
+
+  it('keeps photo references only when explicitly restoring a draft', () => {
+    const doc = createDefaultResume()
+    doc.personalInfo.photoId = 'photo-1'
+    doc.personalInfo.showPhoto = true
+    doc.settings.showPhoto = true
+
+    const parsed = resumeDocumentSchema.parse(doc)
+    const imported = toResumeDocument(parsed)
+    expect(imported.personalInfo.photoId).toBeNull()
+    expect(imported.personalInfo.showPhoto).toBe(false)
+    expect(imported.settings.showPhoto).toBe(false)
+
+    const restored = toResumeDocument(parsed, { keepPhoto: true })
+    expect(restored.personalInfo.photoId).toBe('photo-1')
+    expect(restored.personalInfo.showPhoto).toBe(true)
+    expect(restored.settings.showPhoto).toBe(true)
   })
 })
