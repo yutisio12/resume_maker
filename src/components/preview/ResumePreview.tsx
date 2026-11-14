@@ -135,7 +135,7 @@ export default function ResumePreview({ id = 'resume-preview', document, showWat
                 <>
                   {' '}
                   <a href={item.credentialUrl} className='font-normal underline underline-offset-2' target='_blank' rel='noopener noreferrer'>
-                    Kredensial
+                    Credentials
                   </a>
                 </>
               )}
