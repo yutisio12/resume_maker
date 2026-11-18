@@ -21,7 +21,7 @@ export default function ExportPdfButton() {
 
   const printResume = () => {
     if (!verified) {
-      alert('Silakan verifikasi terlebih dahulu di halaman utama');
+      alert('Silakan verifikasi terlebih dahulu di halaman utama!');
       return;
     }
 
