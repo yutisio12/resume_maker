@@ -288,6 +288,23 @@ Alur verifikasi:
 
 Tidak ada data CV yang dikirim ke endpoint ini.
 
+### Self-host dengan Docker (opsional)
+
+`Dockerfile` + `nginx.conf` menghasilkan container statis untuk deployment mandiri:
+
+```bash
+docker build -t resume-maker .
+docker run --rm -p 8080:80 resume-maker
+```
+
+Batasan penting:
+
+- Container hanya menyajikan `out/`. **Pages Function tidak ikut**, jadi endpoint `/verify-turnstile` tidak ada. Karena itu `NEXT_PUBLIC_TURNSTILE_DISABLED` default-nya `true` saat build Docker.
+- Jika tetap ingin Turnstile aktif, endpoint verifikasi harus disediakan terpisah (misalnya lewat reverse proxy) dan nilai build-arg harus disesuaikan:
+  `--build-arg NEXT_PUBLIC_TURNSTILE_DISABLED=false --build-arg NEXT_PUBLIC_TURNSTILE_SITE_KEY=...`
+- Header keamanan (CSP, HSTS, dan sejenisnya) untuk jalur Docker diatur di `nginx.conf`, bukan di `public/_headers` — `_headers` hanya dipakai Cloudflare Pages.
+- `TURNSTILE_SECRET_KEY` dan file `.env` lokal sengaja tidak ikut masuk image.
+
 ---
 
 ## Struktur Proyek
