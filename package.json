@@ -37,7 +37,7 @@
     "dompurify": "^3.4.17",
     "idb": "^8.0.4",
     "lucide-react": "^1.61.0",
-    "next": "14.2.35",
+    "next": "15.5.29",
     "next-themes": "^0.4.6",
     "react": "^18",
     "react-dom": "^18",
@@ -57,15 +57,22 @@
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "@types/uuid": "^10.0.0",
-    "@vitejs/plugin-react": "^4.3.4",
-    "@vitest/coverage-v8": "^2.1.9",
+    "@vitejs/plugin-react": "^5.1.1",
+    "@vitest/coverage-v8": "^4.1.12",
     "eslint": "^8",
-    "eslint-config-next": "14.2.35",
+    "eslint-config-next": "15.5.29",
     "jsdom": "^25.0.1",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
     "typescript": "^5",
-    "vitest": "^2.1.9"
+    "vite": "^6.4.4",
+    "vitest": "^4.1.12"
+  },
+  "pnpm": {
+    "overrides": {
+      "postcss": "^8.5.33",
+      "minimatch": "^11.0.1"
+    }
   },
   "description": "Aplikasi pembuat CV/resume profesional yang ramah ATS, berjalan **100% di browser**. Data CV disimpan lokal di IndexedDB; tidak ada backend yang menerima isi CV, foto, atau file ekspor.",
   "main": "index.js",
