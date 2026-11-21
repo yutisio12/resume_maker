@@ -1,2 +1,28 @@
-﻿# Docker
-.dockerignore
+﻿# Dependencies and build artifacts (recreated inside the image)
+node_modules
+.next
+.next-e2e
+.next-csp
+out
+build
+coverage
+playwright-report
+test-results
+
+# Secrets and local environment
+.env
+.env.*
+!.env.example
+
+# Version control, editor, and OS files
+.git
+.gitignore
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+
+# Logs and local caches
+*.log
+tsconfig.tsbuildinfo
+next-env.d.ts
